@@ -1,0 +1,21 @@
+p {
+    margin: 0;
+}
+
+#team-header {
+    display: flex;
+    margin: 8px;
+}
+
+.team-header-column {
+    height: 100%;
+    margin-right: 32px;
+}
+
+.team-header-row {
+    display: flex;
+}
+
+.team-header-value {
+    margin-right: 8px;
+}

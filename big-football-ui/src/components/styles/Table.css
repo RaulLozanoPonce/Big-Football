@@ -1,0 +1,13 @@
+.table {
+    height: 100%;
+    width: 100%;
+    font-size: 14px;
+}
+
+.center-column {
+    text-align: center;
+}
+
+h4 {
+    text-align: center;
+}
