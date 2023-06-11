@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import ui1.raullozano.bigfootball.common.model.Competition;
 import ui1.raullozano.bigfootball.common.model.extractor.Match;
+import ui1.raullozano.bigfootball.common.model.transformator.LineupStats;
 import ui1.raullozano.bigfootball.common.model.transformator.PlayerCombination;
 import ui1.raullozano.bigfootball.common.model.transformator.PlayerStats;
 import ui1.raullozano.bigfootball.common.model.transformator.Team;
@@ -126,6 +127,44 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
+    public void saveTeamLastStats(String competition, String season, Map<String, List<Integer>> teamLastStats) {
+
+    }
+
+    @Override
+    public Map<String, List<Integer>> getTeamLastStats(String competition, String season) {
+        File file = new File(data().toFile().getAbsoluteFile() + "/transformed/team-last-stats/" + competition + "/" + season + "/stats.json");
+        if(file.exists()) {
+            try {
+                return new Gson().fromJson(Files.readString(file.toPath()), new TypeToken<Map<String, List<PlayerStats>>>() {}.getType());
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+
+        return new HashMap<>();
+    }
+
+    @Override
+    public void saveLineupStats(String competition, String season, Map<String, LineupStats> lineupStats) {
+
+    }
+
+    @Override
+    public Map<String, LineupStats> getLineupStats(String competition, String season) {
+        File file = new File(data().toFile().getAbsoluteFile() + "/transformed/lineup-stats/" + competition + "/" + season + "/stats.json");
+        if(file.exists()) {
+            try {
+                return new Gson().fromJson(Files.readString(file.toPath()), new TypeToken<Map<String, List<PlayerStats>>>() {}.getType());
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+
+        return new HashMap<>();
+    }
+
+    @Override
     public synchronized void savePlayerLastStats(String competition, String season, Map<String, List<PlayerStats>> lastStats) {
         try {
             File file = new File(data().toFile().getAbsoluteFile() + "/transformed/player-last-stats/" + competition + "/" + season + "/stats.json");
@@ -140,7 +179,7 @@ public class LocalFileAccessor implements FileAccessor {
     @Override
     public synchronized void savePlayerCombination(PlayerCombination playerCombination) {
         try {
-            File file = new File(data().toFile().getAbsoluteFile() + "/player_combinations.csv");
+            File file = new File(data().toFile().getAbsoluteFile() + "/transformed/player_combinations.csv");
             if (!file.exists()) Files.writeString(file.toPath(), playerCombination.header(), CREATE, APPEND, WRITE);
             Files.writeString(file.toPath(), playerCombination.toString(), CREATE, APPEND, WRITE);
         } catch(Throwable t) {

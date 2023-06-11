@@ -51,11 +51,15 @@ public class MatchUrlsGetter {
     }
 
     private Competition competitionOf(Element element) {
-        String competitionUrl = element.getElementsByTag("a").get(0).attr("href");
-        for (Competition competition : competitions) {
-            if(competitionUrl.contains("comps/" + competition.id() + "/")) {
-                return competition;
+        try {
+            String competitionUrl = element.getElementsByTag("a").get(0).attr("href");
+            for (Competition competition : competitions) {
+                if (competitionUrl.contains("comps/" + competition.id() + "/")) {
+                    return competition;
+                }
             }
+        } catch(Throwable t) {
+            t.printStackTrace();
         }
 
         return null;

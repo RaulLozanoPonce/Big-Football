@@ -10,7 +10,6 @@ import ui1.raullozano.bigfootball.common.model.transformator.Team;
 import ui1.raullozano.bigfootball.etl.transformator.transformators.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,9 +21,9 @@ public class Transformator {
     private final int year;
     private final Map<String, Team> teams;
     private final Map<String, List<PlayerStats>> playerLastStats;
-    private final Map<String, List<Integer>> teamLastStats = new HashMap<>();
+    private final Map<String, List<Integer>> teamLastStats;
+    private final Map<String, LineupStats> lineupStats;
     private final List<PlayerCombination> playerCombinations = new ArrayList<>();
-    private final Map<String, LineupStats> lineupStats = new HashMap<>();
 
     public Transformator(FileAccessor fileAccessor, String competition, int year) {
         this.fileAccessor = fileAccessor;
@@ -32,8 +31,8 @@ public class Transformator {
         this.year = year;
         this.teams = loadTeamsOf(competition, year);
         this.playerLastStats = loadPlayerLastStats(competition, year);
-        //this.teamLastStats = loadTeamLastStats(competition, year);
-        //this.lineupStats = loadTeamLastStats(competition, year);
+        this.teamLastStats = loadTeamLastStats(competition, year);
+        this.lineupStats = loadLineupStats(competition, year);
     }
 
     private Map<String, Team> loadTeamsOf(String competition, int year) {
@@ -42,6 +41,14 @@ public class Transformator {
 
     private Map<String, List<PlayerStats>> loadPlayerLastStats(String competition, int year) {
         return fileAccessor.getPlayerLastStats(competition, String.valueOf(year));
+    }
+
+    private Map<String, List<Integer>> loadTeamLastStats(String competition, int year) {
+        return fileAccessor.getTeamLastStats(competition, String.valueOf(year));
+    }
+
+    private Map<String, LineupStats> loadLineupStats(String competition, int year) {
+        return fileAccessor.getLineupStats(competition, String.valueOf(year));
     }
 
     public void transform(Match match) {
@@ -79,5 +86,7 @@ public class Transformator {
         }
 
         this.fileAccessor.savePlayerLastStats(competition, String.valueOf(year), playerLastStats);
+        this.fileAccessor.saveTeamLastStats(competition, String.valueOf(year), teamLastStats);
+        this.fileAccessor.saveLineupStats(competition, String.valueOf(year), lineupStats);
     }
 }
