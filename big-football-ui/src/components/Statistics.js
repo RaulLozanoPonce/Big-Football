@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import Navigation from './Navigation';
+import Navigation from './subcomponents/Navigation';
 import TeamHeader from './subcomponents/TeamHeader';
 import Table from './subcomponents/Table';
 
@@ -36,7 +36,7 @@ class Statistics extends Component {
     render() {
         return (
             <div className="Statistics">
-                <Navigation title="FBig Data"/>
+                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }/>
                 <TeamHeader />
                 <div id="statistics-content">
                     <div className="statistics-content-column" style={{ width:'34%' }}>
@@ -82,10 +82,9 @@ class Statistics extends Component {
 
     componentDidMount() {
         var self = this;
-        AjaxGet(urlBase + "/team/" + this.season + "/" + this.competition + "/" + this.team, {}, function(content) {
+        AjaxGet(urlBase + "/api/statistics/" + this.season + "/" + this.competition + "/" + this.team, {}, function(content) {
             var team = JSON.parse(content);
-            console.log(team);
-            document.getElementById("team-name").innerHTML = team.teamName;
+
             document.getElementById("played-matches").innerHTML = team.playedMatches;
             document.getElementById("won-matches").innerHTML = team.won;
             document.getElementById("draw-matches").innerHTML = team.draw;

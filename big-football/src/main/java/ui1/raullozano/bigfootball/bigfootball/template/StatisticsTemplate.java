@@ -15,9 +15,4 @@ public class StatisticsTemplate extends WebTemplate {
                 "https://code.highcharts.com/highcharts.js"
         );
     }
-
-    @Override
-    protected String preRenderScript() {
-        return "console.log('PRE RENDER ---------------------------');";
-    }
 }

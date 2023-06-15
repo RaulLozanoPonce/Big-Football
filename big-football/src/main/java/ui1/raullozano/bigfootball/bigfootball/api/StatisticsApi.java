@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import static ui1.raullozano.bigfootball.common.model.transformator.Position.*;
 
-public class TeamApi {
+public class StatisticsApi {
 
     private final Team team;
     private double maxMinutes = 0;
@@ -21,7 +21,7 @@ public class TeamApi {
     private double maxGoalsAgainsByMinute = 0;
     private double maxWonMinutes = 0;
 
-    public TeamApi(FileAccessor fileAccessor, Map<String, String> params) {
+    public StatisticsApi(FileAccessor fileAccessor, Map<String, String> params) {
         this.team = fileAccessor.getTeam(params.get("competition"), params.get("season"), params.get("team"));
         initMaxValues(fileAccessor.getTeams(params.get("competition"), params.get("season")));
     }
@@ -62,7 +62,7 @@ public class TeamApi {
                         return e2;
                     }
                 }).map(e -> new StatisticsTemplateResponse.LineupComponent(playersOf(team, e.getKey()), e.getValue().minutes()))
-                .orElse(null);
+                .orElse(new StatisticsTemplateResponse.LineupComponent(new ArrayList<>(), 0, 0.0));
     }
 
     private StatisticsTemplateResponse.LineupComponent startingLineupOf(Team team) {
@@ -93,12 +93,12 @@ public class TeamApi {
                         playersOf(team, e.getKey()),
                         e.getValue().minutes(),
                         e.getValue().goalsFor() / (double) e.getValue().minutes()
-                )).orElse(null);
+                )).orElse(new StatisticsTemplateResponse.LineupComponent(new ArrayList<>(), 0, 0.0));
     }
 
     private StatisticsTemplateResponse.LineupComponent lessGoalsAgainstByMinuteLineupOf(Team team) {
         return team.lineupStatistics().entrySet().stream()
-                .filter(e -> e.getValue().minutes() >= 80)
+                .filter(e -> e.getValue().minutes() >= 70)
                 .reduce((e1, e2) -> {
                     double e1GoalsByMinute = e1.getValue().goalsAgainst() / (double) e1.getValue().minutes();
                     double e2GoalsByMinute = e2.getValue().goalsAgainst() / (double) e2.getValue().minutes();
@@ -118,7 +118,7 @@ public class TeamApi {
                         playersOf(team, e.getKey()),
                         e.getValue().minutes(),
                         e.getValue().goalsAgainst() / (double) e.getValue().minutes()
-                )).orElse(null);
+                )).orElse(new StatisticsTemplateResponse.LineupComponent(new ArrayList<>(), 0, 0.0));
     }
 
     private StatisticsTemplateResponse.LineupComponent moreWonMinutesLineupOf(Team team) {
@@ -130,7 +130,7 @@ public class TeamApi {
                         return e2;
                     }
                 }).map(e -> new StatisticsTemplateResponse.LineupComponent(playersOf(team, e.getKey()), e.getValue().wonMinutes()))
-                .orElse(null);
+                .orElse(new StatisticsTemplateResponse.LineupComponent(new ArrayList<>(), 0, 0.0));
     }
 
     private StatisticsTemplateResponse.LineupComponent bestLineupOf(Team team) {
@@ -142,7 +142,7 @@ public class TeamApi {
                         return e2;
                     }
                 }).map(e -> new StatisticsTemplateResponse.LineupComponent(playersOf(team, e.getKey()), scoreOf(e.getValue())))
-                .orElse(null);
+                .orElse(new StatisticsTemplateResponse.LineupComponent(new ArrayList<>(), 0, 0.0));
     }
 
     private double scoreOf(LineupStatistics value) {

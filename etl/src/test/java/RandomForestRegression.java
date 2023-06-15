@@ -25,13 +25,13 @@ public class RandomForestRegression {
         Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
 
         ParamMap[] paramGrid = new ParamGridBuilder()
-                .addGrid(pca.k(), new int[] {70})
-                .addGrid(lr.minInstancesPerNode(), new int[] {1})
-                .addGrid(lr.maxDepth(), new int[] {8})
-                .addGrid(lr.maxBins(), new int[] {6})
-                .addGrid(lr.minInfoGain(), new double[] {0.03})
-                .addGrid(lr.minWeightFractionPerNode(), new double[] {0.0})
-                .addGrid(lr.checkpointInterval(), new int[] {1})
+                .addGrid(pca.k(), new int[] {200, 210, 220, 230, 250})
+                .addGrid(lr.minInstancesPerNode(), new int[] {1, 2, 3})
+                .addGrid(lr.maxDepth(), new int[] {2, 5, 8})
+                .addGrid(lr.maxBins(), new int[] {2, 6, 10})
+                .addGrid(lr.minInfoGain(), new double[] {0.01, 0.5, 1})
+                .addGrid(lr.minWeightFractionPerNode(), new double[] {0.0, 0.1})
+                .addGrid(lr.checkpointInterval(), new int[] {1, 5, 10})
                 .build();
 
         RegressionEvaluator evaluator = new RegressionEvaluator().setMetricName("r2");

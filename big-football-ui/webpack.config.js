@@ -14,6 +14,9 @@ module.exports = function(_env, argv) {
         devtool: isDevelopment && "cheap-module-source-map",
         entry: {
             'home': './src/home.js',
+            'competition': './src/competition.js',
+            'season': './src/season.js',
+            'team': './src/team.js',
             'statistics': './src/statistics.js',
             'lineups': './src/lineups.js'
         },
@@ -80,6 +83,21 @@ module.exports = function(_env, argv) {
                 filename: 'home.html',
                 template: 'public/index.html',
                 chunks: ['home']
+            }),
+            new HtmlWebpackPlugin({
+                filename: 'competition.html',
+                template: 'public/index.html',
+                chunks: ['competition']
+            }),
+            new HtmlWebpackPlugin({
+                filename: 'team.html',
+                template: 'public/index.html',
+                chunks: ['team']
+            }),
+            new HtmlWebpackPlugin({
+                filename: 'season.html',
+                template: 'public/index.html',
+                chunks: ['season']
             }),
             new HtmlWebpackPlugin({
                 filename: 'statistics.html',

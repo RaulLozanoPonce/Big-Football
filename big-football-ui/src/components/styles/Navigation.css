@@ -1,6 +1,27 @@
 #navigation {
-    background-color: red;
-    height: 60px;
+    background-color: #800000;
+    height: 80px;
     width: 100%;
     display: flex;
+}
+
+h1 {
+    height: 100%;
+    color: white;
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.homeButton {
+    height: 60px;
+    width: 60px;
+    margin: 10px 20px 0 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.homeButton:hover {
+    cursor: pointer;
 }

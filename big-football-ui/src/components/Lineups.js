@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import Navigation from './Navigation';
+import Navigation from './subcomponents/Navigation';
 import TeamHeader from './subcomponents/TeamHeader';
 import LineupSelector from './subcomponents/LineupSelector';
 import Table from './subcomponents/Table';
@@ -31,7 +31,7 @@ class Statistics extends Component {
     render() {
         return (
             <div className="Lineups">
-                <Navigation title="FBig Data"/>
+                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }/>
                 <TeamHeader />
                 <LineupSelector loadFunction={this.loadLineups} selectId="lineup-selector" />
                 <div id="lineups-content">
@@ -59,11 +59,10 @@ class Statistics extends Component {
     loadLineups(e) {
 
         var self = this;
-        AjaxGet(urlBase + "/lineup/" + this.season + "/" + this.competition + "/" + this.team + "/" + document.getElementById("lineup-selector").value, {}, function(content) {
+        AjaxGet(urlBase + "/api/lineup/" + this.season + "/" + this.competition + "/" + this.team + "/" + document.getElementById("lineup-selector").value, {}, function(content) {
 
             var team = JSON.parse(content);
 
-            document.getElementById("team-name").innerHTML = team.teamName;
             document.getElementById("played-matches").innerHTML = team.playedMatches;
             document.getElementById("won-matches").innerHTML = team.won;
             document.getElementById("draw-matches").innerHTML = team.draw;

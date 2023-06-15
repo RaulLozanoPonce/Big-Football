@@ -6,7 +6,6 @@ import ui1.raullozano.bigfootball.common.model.extractor.TeamMatch;
 import ui1.raullozano.bigfootball.common.model.extractor.stats.Stat;
 import ui1.raullozano.bigfootball.common.model.transformator.*;
 import ui1.raullozano.bigfootball.common.utils.MatchUtils;
-import ui1.raullozano.bigfootball.etl.transformator.Utils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -86,7 +85,6 @@ public class LineupTransformatorResults {
 
         String minute = "0";
         int goalDifference = 0;
-        int previousGoals = 0;
 
         for (MatchEvent event : events) {
 
@@ -124,27 +122,24 @@ public class LineupTransformatorResults {
 
                     PlayerCombination homeResults = new PlayerCombination()
                             .addPlayerStats(homePlayersStats, awayPlayersStats)
-                            .addPreviousGoals(previousGoals)
-                            .addIsHome(true)
                             .addTeamsStreak(localTeamStreak, awayTeamStreak)
                             .addLastGoalDifference(homeLastGoalDifference, awayLastGoalDifference)
+                            .addTeams(homeTeam.name(), awayTeam.name())
                             .addGoalDifference(goalDifference, minutes);
 
                     playerResults.add(homeResults);
 
                     PlayerCombination awayResults = new PlayerCombination()
                             .addPlayerStats(awayPlayersStats, homePlayersStats)
-                            .addPreviousGoals(-previousGoals)
-                            .addIsHome(false)
                             .addTeamsStreak(awayTeamStreak, localTeamStreak)
                             .addLastGoalDifference(awayLastGoalDifference, homeLastGoalDifference)
+                            .addTeams(awayTeam.name(), homeTeam.name())
                             .addGoalDifference(-goalDifference, minutes);
 
                     playerResults.add(awayResults);
                 }
 
                 minute = eventMinute;
-                previousGoals += goalDifference;
                 goalDifference = 0;
 
                 if(event.team().equals("home")) {
@@ -193,20 +188,18 @@ public class LineupTransformatorResults {
 
                 PlayerCombination homeResults = new PlayerCombination()
                         .addPlayerStats(homePlayersStats, awayPlayersStats)
-                        .addPreviousGoals(previousGoals)
-                        .addIsHome(true)
                         .addTeamsStreak(localTeamStreak, awayTeamStreak)
                         .addLastGoalDifference(homeLastGoalDifference, awayLastGoalDifference)
+                        .addTeams(homeTeam.name(), awayTeam.name())
                         .addGoalDifference(goalDifference, minutes);
 
                 playerResults.add(homeResults);
 
                 PlayerCombination awayResults = new PlayerCombination()
                         .addPlayerStats(awayPlayersStats, homePlayersStats)
-                        .addPreviousGoals(-previousGoals)
-                        .addIsHome(false)
                         .addTeamsStreak(awayTeamStreak, localTeamStreak)
                         .addLastGoalDifference(awayLastGoalDifference, homeLastGoalDifference)
+                        .addTeams(awayTeam.name(), homeTeam.name())
                         .addGoalDifference(-goalDifference, minutes);
 
                 playerResults.add(awayResults);

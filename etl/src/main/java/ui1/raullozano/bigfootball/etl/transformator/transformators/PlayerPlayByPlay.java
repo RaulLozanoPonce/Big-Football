@@ -145,6 +145,7 @@ public class PlayerPlayByPlay {
 
         MatchEvent substitutedEvent = events.stream()
                 .filter(e -> e.type() == MatchEvent.MatchEventType.Substitution)
+                .filter(e -> e.otherPlayer() != null)
                 .filter(e -> e.otherPlayer().equals(player.name()))
                 .findFirst().orElse(null);
 

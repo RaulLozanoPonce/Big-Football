@@ -1,9 +1,9 @@
-.Home {
+.Competition {
     width: 100%;
     height: 100%;
 }
 
-#competitions {
+#seasons {
     width: 100%;
     display: flex;
     flex-wrap: wrap;

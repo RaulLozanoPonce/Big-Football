@@ -1,12 +1,9 @@
 package ui1.raullozano.bigfootball.bigfootball;
 
 import spark.Spark;
+import ui1.raullozano.bigfootball.bigfootball.api.*;
+import ui1.raullozano.bigfootball.bigfootball.template.*;
 import ui1.raullozano.bigfootball.common.files.FileAccessor;
-import ui1.raullozano.bigfootball.bigfootball.api.LineupApi;
-import ui1.raullozano.bigfootball.bigfootball.api.TeamApi;
-import ui1.raullozano.bigfootball.bigfootball.template.HomeTemplate;
-import ui1.raullozano.bigfootball.bigfootball.template.LineupsTemplate;
-import ui1.raullozano.bigfootball.bigfootball.template.StatisticsTemplate;
 import ui1.raullozano.bigfootball.bigfootball.template.chart.*;
 
 import java.util.HashMap;
@@ -40,21 +37,48 @@ public class UIBox {
     }
 
     private void initApis() {
-        get("/team/:season/:competition/:team", (req, res) -> {
+        get("/api/competitions", (req, res) -> {
+            return new CompetitionsApi(fileAccessor).getResponse();
+        });
+
+        get("/api/seasons/:competition", (req, res) -> {
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("competition", req.params("competition"));
+            return new SeasonsApi(fileAccessor, queryParams).getResponse();
+        });
+
+        get("/api/teams/:season/:competition", (req, res) -> {
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("season", req.params("season"));
+            queryParams.put("competition", req.params("competition"));
+            return new TeamsApi(fileAccessor, queryParams).getResponse();
+        });
+
+        get("/api/statistics/:season/:competition/:team", (req, res) -> {
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("season", req.params("season"));
             queryParams.put("competition", req.params("competition"));
             queryParams.put("team", req.params("team"));
-            return new TeamApi(fileAccessor, queryParams).getResponse();
+            return new StatisticsApi(fileAccessor, queryParams).getResponse();
         });
 
-        get("/lineup/:season/:competition/:team/:lineup", (req, res) -> {
+        get("/api/lineup/:season/:competition/:team/:lineup", (req, res) -> {
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("season", req.params("season"));
             queryParams.put("competition", req.params("competition"));
             queryParams.put("team", req.params("team"));
             queryParams.put("lineup", req.params("lineup"));
             return new LineupApi(fileAccessor, queryParams).getResponse();
+        });
+
+        get("/api/best-lineup/:season/:competition/:this-team/:other-team/:is-local", (req, res) -> {
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("season", req.params("season"));
+            queryParams.put("competition", req.params("competition"));
+            queryParams.put("this-team", req.params("this-team"));
+            queryParams.put("other-team", req.params("other-team"));
+            queryParams.put("is-local", req.params("is-local"));
+            return new BestLineupApi(fileAccessor, queryParams).getResponse();
         });
     }
 
@@ -133,7 +157,11 @@ public class UIBox {
     }
 
     private void initUI() {
+        get("/", (req, res) -> new HomeTemplate().getHtml());
         get("/home", (req, res) -> new HomeTemplate().getHtml());
+        get("/competition", (req, res) -> new CompetitionTemplate().getHtml());
+        get("/season", (req, res) -> new SeasonTemplate().getHtml());
+        get("/team", (req, res) -> new TeamTemplate().getHtml());
         get("/statistics", (req, res) -> new StatisticsTemplate().getHtml());
         get("/lineups", (req, res) -> new LineupsTemplate().getHtml());
     }

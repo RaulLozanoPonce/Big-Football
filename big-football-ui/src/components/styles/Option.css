@@ -1,0 +1,25 @@
+.option {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 200px;
+    height: 200px;
+    margin: 20px 0 0 20px;
+    background-color: #B00000;
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.option:hover {
+    cursor: pointer;
+}
+
+p {
+    height: 75%;
+    width: 75%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}

@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './style.css';
-import Lineups from './components/Lineups';
+import Team from './components/Team';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Lineups />
+    <Team />
   </React.StrictMode>
 );
 

@@ -32,26 +32,6 @@ public class PlayerCombination {
             this.dataset.put("other-gk-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
             this.dataset.put("other-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() != Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
         });
-        /*attributes.forEach(s -> {
-            this.dataset.put("this-gk-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("this-df-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.DF).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("this-cc-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.CC).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("this-dl-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.DL).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("other-gk-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("other-df-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.DF).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("other-cc-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.CC).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("other-dl-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.DL).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-        });*/
-        return this;
-    }
-
-    public PlayerCombination addPreviousGoals(int previousGoals) {
-        this.dataset.put("previousGoals", previousGoals);
-        return this;
-    }
-
-    public PlayerCombination addIsHome(boolean isHome) {
-        this.dataset.put("isHome", isHome ? 1 : 0);
         return this;
     }
 
@@ -64,6 +44,12 @@ public class PlayerCombination {
     public PlayerCombination addLastGoalDifference(double thisLastGoalDifference, double otherLastGoalDifference) {
         this.dataset.put("thisLastGoalDifference", thisLastGoalDifference);
         this.dataset.put("otherLastGoalDifference", otherLastGoalDifference);
+        return this;
+    }
+
+    public PlayerCombination addTeams(String thisTeam, String otherTeam) {
+        this.dataset.put("thisTeam", thisTeam);
+        this.dataset.put("otherTeam", otherTeam);
         return this;
     }
 
