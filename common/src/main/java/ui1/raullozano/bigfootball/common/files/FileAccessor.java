@@ -1,6 +1,5 @@
 package ui1.raullozano.bigfootball.common.files;
 
-import org.apache.spark.ml.tuning.CrossValidatorModel;
 import ui1.raullozano.bigfootball.common.model.Competition;
 import ui1.raullozano.bigfootball.common.model.extractor.Match;
 import ui1.raullozano.bigfootball.common.model.transformator.LineupStats;
@@ -38,6 +37,7 @@ public interface FileAccessor {
     Map<String, LineupStats> getLineupStats(String competition, String season);
     String getPlayerCombinationsFilePath();
     void savePlayerCombination(PlayerCombination playerCombination);
-    CrossValidatorModel getBestLineupModel();
-    void saveBestLineupModel(CrossValidatorModel cvModel);
+    void saveLineupToMatch(String competition, String season, String lineup, String players, PlayerCombination line);
+    void removeLineupToMatch();
+    void saveBestLineupToMatch(String line);
 }

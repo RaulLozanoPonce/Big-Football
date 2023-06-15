@@ -6,9 +6,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.evaluation.RegressionEvaluator;
-import org.apache.spark.ml.feature.PCA;
-import org.apache.spark.ml.feature.StandardScaler;
-import org.apache.spark.ml.feature.VectorAssembler;
+import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.ml.regression.LinearRegression;
 import org.apache.spark.ml.tuning.CrossValidator;
@@ -20,13 +18,10 @@ import org.apache.spark.sql.SparkSession;
 import ui1.raullozano.bigfootball.common.files.FileAccessor;
 import ui1.raullozano.bigfootball.common.model.transformator.*;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.nio.file.StandardOpenOption.*;
 import static ui1.raullozano.bigfootball.common.model.transformator.Position.*;
 
 public class BestLineupModel {
@@ -42,44 +37,48 @@ public class BestLineupModel {
 
     public void get() {
 
-        //Map<String, List<Path>> teamCombinations = getAllTeamsCombinations();
+        //saveAllTeamsCombinations();
 
         SparkSession session = getSession();
         Dataset<Row> dataset = getDataset(session, fileAccessor.getPlayerCombinationsFilePath());
         CrossValidatorModel cvModel = calculateCvModel(dataset);
 
-        Dataset<Row> teamCombinationDataset = getDataset(session, Path.of("./temp/ml/players.csv").toString());
-        Dataset<Row> transform = cvModel.transform(teamCombinationDataset);
+        for (String competition : fileAccessor.competitionFolderNames()) {
+            for (String season : fileAccessor.seasonFolderNames(competition)) {
 
-        List<Row> predictions = transform.select("this-team", "other-team", "lineup", "players", "prediction").collectAsList();
-        Map<String, List<Row>> predictionsByTeam = predictions.stream().collect(Collectors.groupingBy(r -> r.getString(0)));
+                Dataset<Row> teamCombinationDataset = getDataset(session, Path.of("./temp/transformed/machine-learning/test/" + competition + "/" + season + "/player_combinations.csv").toString());
+                Dataset<Row> transform = cvModel.transform(teamCombinationDataset);
 
-        for (String team : predictionsByTeam.keySet()) {
-            Map<String, List<Row>> predictionsByOtherTeam = predictionsByTeam.get(team).stream().collect(Collectors.groupingBy(r -> r.getString(1)));
-            for (String otherTeam : predictionsByOtherTeam.keySet()) {
-                Map<String, List<Row>> predictionsByLineup = predictionsByOtherTeam.get(otherTeam).stream().collect(Collectors.groupingBy(r -> r.getString(2)));
-                for (String lineup : predictionsByLineup.keySet()) {
+                List<Row> predictions = transform.select("thisTeam", "otherTeam", "lineup", "players", "prediction").collectAsList();
+                Map<String, List<Row>> predictionsByTeam = predictions.stream().collect(Collectors.groupingBy(r -> r.getString(0)));
 
-                    List<Row> lineupPredictions = predictionsByLineup.get(lineup);
+                for (String team : predictionsByTeam.keySet()) {
+                    Map<String, List<Row>> predictionsByOtherTeam = predictionsByTeam.get(team).stream().collect(Collectors.groupingBy(r -> r.getString(1)));
+                    for (String otherTeam : predictionsByOtherTeam.keySet()) {
+                        Map<String, List<Row>> predictionsByLineup = predictionsByOtherTeam.get(otherTeam).stream().collect(Collectors.groupingBy(r -> r.getString(2)));
+                        for (String lineup : predictionsByLineup.keySet()) {
 
-                    int nRow = 0;
-                    Double bestPrediction = null;
+                            List<Row> lineupPredictions = predictionsByLineup.get(lineup);
 
-                    for (int i = 0; i < lineupPredictions.size(); i++) {
-                        if(bestPrediction == null || lineupPredictions.get(i).getDouble(4) > bestPrediction) {
-                            nRow = i;
-                            bestPrediction = lineupPredictions.get(i).getDouble(4);
+                            int nRow = 0;
+                            Double bestPrediction = null;
+
+                            for (int i = 0; i < lineupPredictions.size(); i++) {
+                                if (bestPrediction == null || lineupPredictions.get(i).getDouble(4) > bestPrediction) {
+                                    nRow = i;
+                                    bestPrediction = lineupPredictions.get(i).getDouble(4);
+                                }
+                            }
+
+                            this.fileAccessor.saveBestLineupToMatch(competition + ";" + season + ";" + team + ";" + otherTeam + ";" + lineup + ";" + bestPrediction + ";" + lineupPredictions.get(nRow).getString(3) + "\n");
                         }
-                    }
-
-                    try {
-                        Files.writeString(Path.of("./temp/ml/best.csv"), (team + ";" + otherTeam + ";" + lineup + ";" + bestPrediction + ";" + lineupPredictions.get(nRow).getString(3) + "\n"), WRITE, CREATE, APPEND);
-                    } catch (Throwable t) {
-                        t.printStackTrace();
                     }
                 }
             }
         }
+
+        //TODO
+        //this.fileAccessor.removeLineupToMatch();
     }
 
     private SparkSession getSession() {
@@ -92,11 +91,8 @@ public class BestLineupModel {
     }
 
     private CrossValidatorModel calculateCvModel(Dataset<Row> dataset) {
-        Dataset<Row>[] splits = dataset.randomSplit(new double[] {0.7, 0.3});
-        Dataset<Row> trainingData = splits[0];
-        Dataset<Row> testData = splits[1];
 
-        PCA pca = new PCA().setInputCol("transformedFeatures").setOutputCol("features");
+        PCA pca = new PCA().setInputCol("finalFeatures").setOutputCol("features");
 
         LinearRegression lr = new LinearRegression();
         Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
@@ -106,7 +102,6 @@ public class BestLineupModel {
                 .addGrid(lr.maxIter(), new int[] {100})
                 .addGrid(lr.regParam(), new double[] {0.1})
                 .addGrid(lr.elasticNetParam(), new double[] {0.25})
-                .addGrid(lr.aggregationDepth(), new int[] {2})
                 .build();
 
         RegressionEvaluator evaluator = new RegressionEvaluator().setMetricName("r2");
@@ -117,7 +112,7 @@ public class BestLineupModel {
                 .setEstimatorParamMaps(paramGrid)
                 .setNumFolds(5);
 
-        return cv.fit(trainingData);
+        return cv.fit(dataset);
     }
 
     private Dataset<Row> getDataset(SparkSession session, String path) {
@@ -130,67 +125,91 @@ public class BestLineupModel {
 
     private PipelineStage[] getPipeline(PCA pca, org.apache.spark.ml.regression.LinearRegression lr, Dataset<Row> dataset) {
 
-        VectorAssembler vectorAssembler = new VectorAssembler()
-                .setInputCols(Arrays.stream(dataset.schema().fieldNames()).filter(f -> !f.equals("label")).toArray(String[]::new))
+        List<String> otherAttributes = new ArrayList<>();
+
+        for (String field : dataset.schema().fieldNames()) {
+            if(!field.equals("label") && !field.equals("thisTeam") && !field.equals("otherTeam")) {
+                otherAttributes.add(field);
+            }
+        }
+
+        StringIndexer stringIndexer = new StringIndexer()
+                .setInputCols(new String[] {"thisTeam", "otherTeam"})
+                .setOutputCols(new String[] {"thisTeam-i", "otherTeam-i"});
+
+        OneHotEncoder oneHotEncoder = new OneHotEncoder()
+                .setInputCols(new String[] {"thisTeam-i", "otherTeam-i"})
+                .setOutputCols(new String[] {"thisTeam-b", "otherTeam-b"})
+                .setDropLast(false);
+
+        VectorAssembler vectorAssembler1 = new VectorAssembler()
+                .setInputCols(otherAttributes.toArray(new String[0]))
                 .setOutputCol("assembledColumns");
 
         StandardScaler scaler = new StandardScaler().setInputCol("assembledColumns")
-                .setOutputCol("transformedFeatures")
+                .setOutputCol("scaledFeatures")
                 .setWithStd(true)
                 .setWithMean(true);
 
-        return new PipelineStage[] {vectorAssembler, scaler, pca, lr};
+        List<String> finalFields = new ArrayList<>();
+        finalFields.add("thisTeam-b");
+        finalFields.add("otherTeam-b");
+        finalFields.add("scaledFeatures");
+
+        VectorAssembler vectorAssembler2 = new VectorAssembler()
+                .setInputCols(finalFields.toArray(new String[0]))
+                .setOutputCol("finalFeatures");
+
+        return new PipelineStage[] {
+                stringIndexer,
+                oneHotEncoder,
+                vectorAssembler1,
+                scaler,
+                vectorAssembler2,
+                pca,
+                lr
+        };
     }
 
-    private Map<String, List<Path>> getAllTeamsCombinations() {
-
-        Map<String, List<Path>> teamCombinationPaths = new HashMap<>();
-
-        //for (String competition : fileAccessor.competitionFolderNames()) {
-            //for (String season : fileAccessor.seasonFolderNames(competition)) {
-        String competition = "Premier League";
-        String season = "2021";
+    private void saveAllTeamsCombinations() {
+        for (String competition : fileAccessor.competitionFolderNames()) {
+            for (String season : fileAccessor.seasonFolderNames(competition)) {
 
                 this.playerLastStats = fileAccessor.getPlayerLastStats(competition, season);
                 this.teamLastStats = fileAccessor.getTeamLastStats(competition, season);
                 this.lineupStats = fileAccessor.getLineupStats(competition, season);
 
                 for (String team : fileAccessor.teamsFileNames(competition, season)) {
-                    teamCombinationPaths.putAll(getAllCombinationsOf(competition, season, team));
+                    saveAllCombinationsOf(competition, season, team);
                 }
-            //}
-        //}
-        return teamCombinationPaths;
-    }
-
-    private Map<String, List<Path>> getAllCombinationsOf(String competition, String season, String team) {
-
-        Map<String, List<Path>> teamCombinationPaths = new HashMap<>();
-
-        for (String otherTeam : fileAccessor.teamsFileNames(competition, season)) {
-            if(!otherTeam.equals(team)) {
-                teamCombinationPaths.put(team + " - " + otherTeam, getCombinationsOf(competition, season, team, otherTeam));
             }
         }
-
-        return teamCombinationPaths;
     }
 
-    private List<Path> getCombinationsOf(String competition, String season, String thisTeamName, String otherTeamName) {
+    private void saveAllCombinationsOf(String competition, String season, String team) {
+        for (String otherTeam : fileAccessor.teamsFileNames(competition, season)) {
+            if(!otherTeam.equals(team)) {
+                saveCombinationsOf(competition, season, team, otherTeam);
+            }
+        }
+    }
+
+    private void saveCombinationsOf(String competition, String season, String thisTeamName, String otherTeamName) {
         Team thisTeam = fileAccessor.getTeam(competition, season, thisTeamName);
         Team otherTeam = fileAccessor.getTeam(competition, season, otherTeamName);
         List<Player> otherTeamLineup = startingLineupOf(otherTeam);
 
-        List<Path> combinationPaths = new ArrayList<>();
-        combinationPaths.add(getCombinationsOf(thisTeam, otherTeam, otherTeamLineup, new Integer[] {3, 4, 3}, season));
-        combinationPaths.add(getCombinationsOf(thisTeam, otherTeam, otherTeamLineup, new Integer[] {4, 3, 3}, season));
-        combinationPaths.add(getCombinationsOf(thisTeam, otherTeam, otherTeamLineup, new Integer[] {5, 3, 2}, season));
-        return combinationPaths;
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {3, 4, 3});
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {3, 5, 2});
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {3, 6, 1});
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {4, 3, 3});
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {4, 4, 2});
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {4, 5, 1});
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {5, 3, 2});
+        saveCombinationsOf(competition, season, thisTeam, otherTeam, otherTeamLineup, new Integer[] {5, 4, 1});
     }
 
-    private Path getCombinationsOf(Team thisTeam, Team otherTeam, List<Player> otherTeamLineup, Integer[] lineup, String season) {
-
-        Path path = Path.of("./temp/ml/players.csv");
+    private void saveCombinationsOf(String competition, String season, Team thisTeam, Team otherTeam, List<Player> otherTeamLineup, Integer[] lineup) {
 
         List<List<Player>> defenseCombination = allCombinationsOf(lineup[0], thisTeam.players().stream().filter(p -> p.finalPosition() == Position.DF)
                 .collect(Collectors.toList()));
@@ -210,7 +229,7 @@ public class BestLineupModel {
                 .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[2] + 1, 3), forwarderCombination.size()));
 
         List<PlayerCombination> lines = new ArrayList<>();
-        List<LineupCombination> combinations = new ArrayList<>();
+        List<List<String>> combinations = new ArrayList<>();
 
         for (Player goalkeeper : thisTeam.players().stream().filter(p -> p.finalPosition() == PT).collect(Collectors.toList())) {
             for (List<Player> defenses : finalDefenseCombination) {
@@ -224,33 +243,16 @@ public class BestLineupModel {
                         PlayerCombination line = lineOf(thisTeam, otherTeam, thisPlayers, otherTeamLineup);
                         if(line != null) {
                             lines.add(line);
-                            combinations.add(new LineupCombination(thisPlayers.stream().map(Player::id).collect(Collectors.toList()), lineupOf(lineup), otherTeam.name()));
+                            combinations.add(thisPlayers.stream().map(Player::id).collect(Collectors.toList()));
                         }
                     }
                 }
             }
         }
 
-        if(lines.size() > 0) {
-            try {
-                Files.createDirectories(path.getParent());
-                if (!Files.exists(path)) Files.writeString(path, "this-team;other-team;lineup;players;" + lines.get(0).header(), CREATE, APPEND, WRITE);
-                for (int i = 0; i < lines.size(); i++) {
-                    Files.writeString(path,
-                            thisTeam.name() + ";" +
-                                    otherTeam.name() + ";" +
-                                    lineupOf(lineup) + ";" +
-                                    new Gson().toJson(combinations.get(0).players) + ";" +
-                                    lines.get(i).toString(),
-                            CREATE, APPEND, WRITE);
-
-                }
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
+        for (int i = 0; i < lines.size(); i++) {
+            this.fileAccessor.saveLineupToMatch(competition, season, lineupOf(lineup), new Gson().toJson(combinations.get(i)), lines.get(i));
         }
-
-        return path;
     }
 
     private String lineupOf(Integer[] lineup) {
@@ -272,8 +274,7 @@ public class BestLineupModel {
         return new PlayerCombination()
                 .addPlayerStats(getPlayerMatchStatsOf(thisPlayers), getPlayerMatchStatsOf(otherPlayers))
                 .addTeamsStreak(teamLastStats.get(thisTeam.name()), teamLastStats.get(otherTeam.name()))
-                //TODO
-                //.addTeams()
+                .addTeams(thisTeam.name(), otherTeam.name())
                 .addLastGoalDifference(homeLastGoalDifference, awayLastGoalDifference);
     }
 
@@ -384,30 +385,6 @@ public class BestLineupModel {
         }
         for (Player player : removed) {
             players.remove(player);
-        }
-    }
-
-    public static class LineupCombination {
-
-        private final List<String> players;
-        private final String schema;
-        private final String otherTeam;
-        private double goalDifference;
-
-        public LineupCombination(List<String> players, String schema, String otherTeam) {
-            this.players = players;
-            this.schema = schema;
-            this.otherTeam = otherTeam;
-        }
-
-        public LineupCombination goalDifference(double goalDifference) {
-            this.goalDifference = goalDifference;
-            return this;
-        }
-
-        @Override
-        public String toString() {
-            return new Gson().toJson(this);
         }
     }
 }

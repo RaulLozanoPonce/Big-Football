@@ -11,8 +11,6 @@ import org.apache.spark.ml.tuning.CrossValidatorModel;
 import org.apache.spark.ml.tuning.ParamGridBuilder;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import ui1.raullozano.bigfootball.common.files.FileAccessor;
-import ui1.raullozano.bigfootball.common.files.LocalFileAccessor;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -22,16 +20,14 @@ public class LinearRegression {
 
     public static void execute(PCA pca, Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
 
-        FileAccessor fileAccessor = new LocalFileAccessor();
-
         org.apache.spark.ml.regression.LinearRegression lr = new org.apache.spark.ml.regression.LinearRegression();
         Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
 
         ParamMap[] paramGrid = new ParamGridBuilder()
-                .addGrid(pca.k(), new int[] {30, 90, 150, 300, 500})
+                .addGrid(pca.k(), new int[] {250, 300, 350})
                 .addGrid(lr.maxIter(), new int[] {100})
-                .addGrid(lr.regParam(), new double[] {0.2, 0.25, 0.3})
-                .addGrid(lr.elasticNetParam(), new double[] {0.1, 0.25, 0.4})
+                .addGrid(lr.regParam(), new double[] {0.25, 0.3, 0.35})
+                .addGrid(lr.elasticNetParam(), new double[] {0.05, 0.1, 0.25})
                 //.addGrid(lr.aggregationDepth(), new int[] {2})
                 .build();
 
@@ -46,8 +42,6 @@ public class LinearRegression {
         long millis = Instant.now().toEpochMilli();
 
         CrossValidatorModel cvModel = cv.fit(trainingData);
-
-        fileAccessor.saveBestLineupModel(cvModel);
 
         PCA finalPca =  (PCA) ((Pipeline) cvModel.bestModel().parent()).getStages()[5];
         LinearRegressionModel finalLrModel = (LinearRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];

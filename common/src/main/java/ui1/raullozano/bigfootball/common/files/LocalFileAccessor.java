@@ -2,7 +2,6 @@ package ui1.raullozano.bigfootball.common.files;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.spark.ml.tuning.CrossValidatorModel;
 import ui1.raullozano.bigfootball.common.model.Competition;
 import ui1.raullozano.bigfootball.common.model.extractor.Match;
 import ui1.raullozano.bigfootball.common.model.transformator.LineupStats;
@@ -11,7 +10,7 @@ import ui1.raullozano.bigfootball.common.model.transformator.PlayerStats;
 import ui1.raullozano.bigfootball.common.model.transformator.Team;
 import ui1.raullozano.bigfootball.common.utils.Time;
 
-import java.io.*;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -38,22 +37,22 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public Path data() {
+    public synchronized Path data() {
         return Path.of(parameters().get("data"));
     }
 
     @Override
-    public Integer port() {
+    public synchronized Integer port() {
         return Integer.valueOf(parameters().get("port"));
     }
 
     @Override
-    public Time.Scale scale() {
+    public synchronized Time.Scale scale() {
         return Time.Scale.valueOf(parameters().get("scale"));
     }
 
     @Override
-    public List<Integer> timeComponents() {
+    public synchronized List<Integer> timeComponents() {
         return new Gson().fromJson(parameters().get("timeComponents"), new TypeToken<List<Integer>>(){}.getType());
     }
 
@@ -75,19 +74,19 @@ public class LocalFileAccessor implements FileAccessor {
 
     @Override
     @SuppressWarnings("all")
-    public List<String> competitionFolderNames() {
+    public synchronized List<String> competitionFolderNames() {
         return Arrays.stream(new File(parameters().get("data") + "/transformed/teams/").listFiles()).map(File::getName).collect(Collectors.toList());
     }
 
     @Override
     @SuppressWarnings("all")
-    public List<String> seasonFolderNames(String competition) {
+    public synchronized List<String> seasonFolderNames(String competition) {
         return Arrays.stream(new File(parameters().get("data") + "/transformed/teams/" + competition + "/").listFiles()).map(File::getName).collect(Collectors.toList());
     }
 
     @Override
     @SuppressWarnings("all")
-    public List<String> teamsFileNames(String competition, String season) {
+    public synchronized List<String> teamsFileNames(String competition, String season) {
         return Arrays.stream(new File(parameters().get("data") + "/transformed/teams/" + competition + "/" + season + "/").listFiles()).map(f -> f.getName().replaceAll("\\.json", "")).collect(Collectors.toList());
     }
 
@@ -146,7 +145,7 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public void saveTeamLastStats(String competition, String season, Map<String, List<Integer>> teamLastStats) {
+    public synchronized void saveTeamLastStats(String competition, String season, Map<String, List<Integer>> teamLastStats) {
         try {
             File file = new File(data() + "/transformed/team-last-stats/" + competition + "/" + season + "/stats.json");
             Files.createDirectories(file.getParentFile().toPath());
@@ -158,7 +157,7 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public Map<String, List<Integer>> getTeamLastStats(String competition, String season) {
+    public synchronized Map<String, List<Integer>> getTeamLastStats(String competition, String season) {
         File file = new File(data() + "/transformed/team-last-stats/" + competition + "/" + season + "/stats.json");
         if(file.exists()) {
             try {
@@ -172,7 +171,7 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public void saveLineupStats(String competition, String season, Map<String, LineupStats> lineupStats) {
+    public synchronized void saveLineupStats(String competition, String season, Map<String, LineupStats> lineupStats) {
         try {
             File file = new File(data() + "/transformed/lineup-stats/" + competition + "/" + season + "/stats.json");
             Files.createDirectories(file.getParentFile().toPath());
@@ -184,7 +183,7 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public Map<String, LineupStats> getLineupStats(String competition, String season) {
+    public synchronized Map<String, LineupStats> getLineupStats(String competition, String season) {
         File file = new File(data() + "/transformed/lineup-stats/" + competition + "/" + season + "/stats.json");
         if(file.exists()) {
             try {
@@ -210,14 +209,14 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public String getPlayerCombinationsFilePath() {
-        return data() + "/transformed/player_combinations.csv";
+    public synchronized String getPlayerCombinationsFilePath() {
+        return data() + "/transformed/machine-learning/player_combinations.csv";
     }
 
     @Override
     public synchronized void savePlayerCombination(PlayerCombination playerCombination) {
         try {
-            File file = new File(data() + "/transformed/player_combinations.csv");
+            File file = new File(data() + "/transformed/machine-learning/player_combinations.csv");
             if (!file.exists()) Files.writeString(file.toPath(), playerCombination.header(), CREATE, APPEND, WRITE);
             Files.writeString(file.toPath(), playerCombination.toString(), CREATE, APPEND, WRITE);
         } catch(Throwable t) {
@@ -226,20 +225,35 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public CrossValidatorModel getBestLineupModel() {
-        try(ObjectInputStream o = new ObjectInputStream(new FileInputStream(data() + "/transformed/best_lineup_model"))) {
-            return (CrossValidatorModel) o.readObject();
-        } catch(Throwable t) {
+    public synchronized void saveLineupToMatch(String competition, String season, String lineup, String players, PlayerCombination line) {
+        try {
+            File file = new File(data() + "/transformed/machine-learning/test/" + competition + "/" + season + "/player_combinations.csv");
+            if (!file.exists()) {
+                Files.createDirectories(file.getParentFile().toPath());
+                Files.writeString(file.toPath(), "lineup;players;" + line.header(), CREATE, APPEND, WRITE);
+            }
+            Files.writeString(file.toPath(), lineup + ";" + players + ";" + line.toString(), CREATE, APPEND, WRITE);
+        } catch (Throwable t) {
             t.printStackTrace();
         }
-        return null;
     }
 
     @Override
-    public void saveBestLineupModel(CrossValidatorModel cvModel) {
-        try(ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(data() + "/transformed/best_lineup_model"))) {
-            o.writeObject(cvModel);
-        } catch(Throwable t) {
+    public void removeLineupToMatch() {
+        try {
+            File file = new File(data() + "/transformed/machine-learning/test/");
+            file.delete();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
+    @Override
+    public void saveBestLineupToMatch(String line) {
+        try {
+            File file = new File(data() + "/transformed/machine-learning/player_combinations_best.csv");
+            Files.writeString(file.toPath(), line, WRITE, CREATE, APPEND);
+        } catch (Throwable t) {
             t.printStackTrace();
         }
     }

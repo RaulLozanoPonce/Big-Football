@@ -6,6 +6,7 @@ import ui1.raullozano.bigfootball.common.model.extractor.Match;
 import ui1.raullozano.bigfootball.common.utils.Time;
 import ui1.raullozano.bigfootball.etl.extractor.Extractor;
 import ui1.raullozano.bigfootball.etl.transformator.Transformator;
+import ui1.raullozano.bigfootball.etl.transformator.ml.BestLineupModel;
 
 import java.time.Instant;
 import java.util.List;
@@ -45,5 +46,7 @@ public class ETLBox {
             }
             transformator.saveFiles();
         }
+
+        new BestLineupModel(fileAccessor).get();
     }
 }

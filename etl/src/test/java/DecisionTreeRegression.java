@@ -27,13 +27,12 @@ public class DecisionTreeRegression {
         Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
 
         ParamMap[] paramGrid = new ParamGridBuilder()
-                .addGrid(pca.k(), new int[] {200, 210, 220, 230, 250})
+                .addGrid(pca.k(), new int[] {200, 300, 400})
+                .addGrid(lr.maxBins(), new int[] {16, 32, 64})
+                .addGrid(lr.maxDepth(), new int[] {5, 7, 9})
+                .addGrid(lr.minInfoGain(), new double[] {0.0, 0.1, 0.2})
                 .addGrid(lr.minInstancesPerNode(), new int[] {1, 2, 3})
-                .addGrid(lr.maxDepth(), new int[] {2, 5, 8})
-                .addGrid(lr.maxBins(), new int[] {2, 6, 10})
-                .addGrid(lr.minInfoGain(), new double[] {0.01, 0.5, 1})
                 .addGrid(lr.minWeightFractionPerNode(), new double[] {0.0, 0.1})
-                .addGrid(lr.checkpointInterval(), new int[] {1, 5, 10})
                 .build();
 
         RegressionEvaluator evaluator = new RegressionEvaluator().setMetricName("r2");
