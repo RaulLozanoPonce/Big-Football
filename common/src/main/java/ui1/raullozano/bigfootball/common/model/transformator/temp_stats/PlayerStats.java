@@ -1,4 +1,6 @@
-package ui1.raullozano.bigfootball.common.model.transformator;
+package ui1.raullozano.bigfootball.common.model.transformator.temp_stats;
+
+import ui1.raullozano.bigfootball.common.model.transformator.Position;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

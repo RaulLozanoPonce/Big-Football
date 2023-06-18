@@ -38,12 +38,6 @@ public class StatisticsApi {
     public String getResponse() {
         if(team == null) return "{}";
         StatisticsTemplateResponse response = new StatisticsTemplateResponse()
-                .teamName(team.name())
-                .playedMatches(team.playedMatches())
-                .won(team.win())
-                .draw(team.draw())
-                .lost(team.lost())
-                .squad(team.players())
                 .regularLineup(regularLineupOf(team))
                 .startingLineup(startingLineupOf(team))
                 .moreGoalsForByMinuteLineup(moreGoalsForByMinuteLineupOf(team))
@@ -238,12 +232,6 @@ public class StatisticsApi {
 
     private static class StatisticsTemplateResponse {
 
-        private String teamName;
-        private int playedMatches;
-        private int won;
-        private int draw;
-        private int lost;
-        private List<PlayerSquad> squad;
         private List<PlayerSquad> regularLineup;
         private Double regularLineupMinutes;
         private List<PlayerSquad> startingLineup;
@@ -257,35 +245,6 @@ public class StatisticsApi {
         private Double moreWonMinutesLineupMinutes;
         private List<PlayerSquad> bestLineup;
         private Double bestLineupScore;
-
-        public StatisticsTemplateResponse teamName(String teamName) {
-            this.teamName = teamName;
-            return this;
-        }
-
-        public StatisticsTemplateResponse playedMatches(int playedMatches) {
-            this.playedMatches = playedMatches;
-            return this;
-        }
-
-        public StatisticsTemplateResponse won(int won) {
-            this.won = won;
-            return this;
-        }
-
-        public StatisticsTemplateResponse draw(int draw) {
-            this.draw = draw;
-            return this;
-        }
-        public StatisticsTemplateResponse lost(int lost) {
-            this.lost = lost;
-            return this;
-        }
-
-        public StatisticsTemplateResponse squad(List<Player> players) {
-            this.squad = players.stream().map(PlayerSquad::new).collect(Collectors.toList());
-            return this;
-        }
 
         public StatisticsTemplateResponse regularLineup(LineupComponent lineupComponent) {
             this.regularLineup = lineupComponent.players.stream().map(PlayerSquad::new).collect(Collectors.toList());

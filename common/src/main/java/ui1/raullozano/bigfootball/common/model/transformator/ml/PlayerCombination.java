@@ -1,4 +1,8 @@
-package ui1.raullozano.bigfootball.common.model.transformator;
+package ui1.raullozano.bigfootball.common.model.transformator.ml;
+
+import ui1.raullozano.bigfootball.common.model.transformator.Player;
+import ui1.raullozano.bigfootball.common.model.transformator.Position;
+import ui1.raullozano.bigfootball.common.model.transformator.temp_stats.PlayerStats;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -7,7 +11,7 @@ import java.util.Set;
 
 public class PlayerCombination {
 
-    private static final List<String> attributes = List.of("goals", "penaltyGoals", "penaltyTried", "shots", "targetShots",
+    private static final List<String> gameStatistics = List.of("goals", "penaltyGoals", "penaltyTried", "shots", "targetShots",
             "xG", "noPenaltyXG", "shotActions", "goalActions", "passesCompleted", "passes", "passesTotalDistance", "passesProgressiveDistance",
             "passesCompletedShort", "passesShort", "passesCompletedMedium", "passesMedium", "passesCompletedLong", "passesLong",
             "assists", "xgAssists", "passXa", "assistedShots", "passesIntoFinalThird", "passesIntoPenaltyArea", "crossesIntoPenaltyArea",
@@ -26,7 +30,7 @@ public class PlayerCombination {
     private final LinkedHashMap<String, Object> dataset = new LinkedHashMap<>();
 
     public PlayerCombination addPlayerStats(Map<Player, List<PlayerStats>> thisPlayersStats, Map<Player, List<PlayerStats>> otherPlayersStats) {
-        attributes.forEach(s -> {
+        gameStatistics.forEach(s -> {
             this.dataset.put("this-gk-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
             this.dataset.put("this-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() != Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
             this.dataset.put("other-gk-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
@@ -64,6 +68,11 @@ public class PlayerCombination {
 
     public Object attribute(String attribute) {
         return this.dataset.get(attribute);
+    }
+
+    public PlayerCombination addAttribute(String name, Object value) {
+        this.dataset.put(name, value);
+        return this;
     }
 
     public void delete(String attribute) {

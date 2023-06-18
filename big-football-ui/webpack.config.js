@@ -18,7 +18,8 @@ module.exports = function(_env, argv) {
             'season': './src/season.js',
             'team': './src/team.js',
             'statistics': './src/statistics.js',
-            'lineups': './src/lineups.js'
+            'lineups': './src/lineups.js',
+            'lineupPrediction': './src/lineupPrediction.js'
         },
         output: {
             path: "/Users/raull/IdeaProjects/big-football/big-football/src/main/resources/public",
@@ -108,6 +109,11 @@ module.exports = function(_env, argv) {
                 filename: 'lineups.html',
                 template: 'public/index.html',
                 chunks: ['lineups']
+            }),
+            new HtmlWebpackPlugin({
+                filename: 'lineupPrediction.html',
+                template: 'public/index.html',
+                chunks: ['lineupPrediction']
             })
         ].filter(Boolean)
     };

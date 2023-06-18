@@ -12,12 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LineupApi {
+public class LineupsApi {
 
     private final Team team;
     private final int[] lineup;
 
-    public LineupApi(FileAccessor fileAccessor, Map<String, String> params) {
+    public LineupsApi(FileAccessor fileAccessor, Map<String, String> params) {
         this.team = fileAccessor.getTeam(params.get("competition"), params.get("season"), params.get("team"));
         this.lineup = lineupOf(params.get("lineup"));
     }
@@ -40,12 +40,6 @@ public class LineupApi {
         if(team == null) return "{}";
 
         LineupsTempleteResponse response = new LineupsTempleteResponse()
-                .teamName(team.name())
-                .playedMatches(team.playedMatches())
-                .won(team.win())
-                .draw(team.draw())
-                .lost(team.lost())
-                .participatingPlayers(team.players().size())
                 .bestDefensiveLineup(bestDefensiveLineupOf(team))
                 .bestPassingLineup(bestPassingLineupOf(team))
                 .bestAttackingLineup(bestAttackingLineupOf(team))
@@ -132,45 +126,10 @@ public class LineupApi {
 
     private static class LineupsTempleteResponse {
 
-        private String teamName;
-        private int playedMatches;
-        private int won;
-        private int draw;
-        private int lost;
-        private int participatingPlayers;
         private List<PlayerSquad> bestDefensiveLineup;
         private List<PlayerSquad> bestPassingLineup;
         private List<PlayerSquad> bestAttackingLineup;
         private List<PlayerSquad> bestFoulsLineup;
-
-        public LineupsTempleteResponse teamName(String teamName) {
-            this.teamName = teamName;
-            return this;
-        }
-
-        public LineupsTempleteResponse playedMatches(int playedMatches) {
-            this.playedMatches = playedMatches;
-            return this;
-        }
-
-        public LineupsTempleteResponse won(int won) {
-            this.won = won;
-            return this;
-        }
-
-        public LineupsTempleteResponse draw(int draw) {
-            this.draw = draw;
-            return this;
-        }
-        public LineupsTempleteResponse lost(int lost) {
-            this.lost = lost;
-            return this;
-        }
-
-        public LineupsTempleteResponse participatingPlayers(int participatingPlayers) {
-            this.participatingPlayers = participatingPlayers;
-            return this;
-        }
 
         public LineupsTempleteResponse bestDefensiveLineup(LineupComponent lineupComponent) {
             this.bestDefensiveLineup = lineupComponent.players.stream().map(PlayerSquad::new).collect(Collectors.toList());

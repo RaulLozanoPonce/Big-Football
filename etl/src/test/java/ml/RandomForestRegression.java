@@ -1,34 +1,36 @@
+package ml;
+
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.evaluation.RegressionEvaluator;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.param.ParamMap;
-import org.apache.spark.ml.regression.LinearRegressionModel;
-import org.apache.spark.ml.regression.LinearRegressionTrainingSummary;
+import org.apache.spark.ml.regression.RandomForestRegressionModel;
+import org.apache.spark.ml.regression.RandomForestRegressor;
 import org.apache.spark.ml.tuning.CrossValidator;
 import org.apache.spark.ml.tuning.CrossValidatorModel;
 import org.apache.spark.ml.tuning.ParamGridBuilder;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LinearRegression {
+public class RandomForestRegression {
 
     public static void execute(PCA pca, Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
 
-        org.apache.spark.ml.regression.LinearRegression lr = new org.apache.spark.ml.regression.LinearRegression();
+        RandomForestRegressor lr = new RandomForestRegressor();
         Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
 
         ParamMap[] paramGrid = new ParamGridBuilder()
-                .addGrid(pca.k(), new int[] {250, 300, 350})
-                .addGrid(lr.maxIter(), new int[] {100})
-                .addGrid(lr.regParam(), new double[] {0.25, 0.3, 0.35})
-                .addGrid(lr.elasticNetParam(), new double[] {0.05, 0.1, 0.25})
-                //.addGrid(lr.aggregationDepth(), new int[] {2})
+                .addGrid(pca.k(), new int[] {300})
+                .addGrid(lr.maxBins(), new int[] {16, 64})
+                .addGrid(lr.maxDepth(), new int[] {5, 9})
+                .addGrid(lr.minInfoGain(), new double[] {0.0, 0.2})
+                .addGrid(lr.minInstancesPerNode(), new int[] {1, 3})
+                .addGrid(lr.minWeightFractionPerNode(), new double[] {0.0})
                 .build();
 
         RegressionEvaluator evaluator = new RegressionEvaluator().setMetricName("r2");
@@ -39,26 +41,19 @@ public class LinearRegression {
                 .setEstimatorParamMaps(paramGrid)
                 .setNumFolds(5);
 
-        long millis = Instant.now().toEpochMilli();
-
         CrossValidatorModel cvModel = cv.fit(trainingData);
 
         PCA finalPca =  (PCA) ((Pipeline) cvModel.bestModel().parent()).getStages()[5];
-        LinearRegressionModel finalLrModel = (LinearRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];
-
-        System.out.println("Time: " + ((Instant.now().toEpochMilli() - millis) / 1000.0) + " segundos");
-
-        //System.out.println("Coefficients: " + finalLrModel.coefficients() + " Intercept: " + finalLrModel.intercept());
+        RandomForestRegressionModel finalLrModel = (RandomForestRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];
 
         System.out.println("MEJOR CONFIGURACION -----------------------------------------------------------------------");
 
         System.out.println("K de PCA: " + finalPca.getK());
-        System.out.println("maxIter: " + finalLrModel.getMaxIter());
-        System.out.println("regParam: " + finalLrModel.getRegParam());
-        System.out.println("elasticNetParam: " + finalLrModel.getElasticNetParam());
-        //System.out.println("aggregationDepth: " + finalLrModel.getAggregationDepth());
-        LinearRegressionTrainingSummary trainingSummary = finalLrModel.summary();
-        System.out.println("r2: " + trainingSummary.r2());
+        System.out.println("maxBins: " + finalLrModel.getMaxBins());
+        System.out.println("maxDepth: " + finalLrModel.getMaxDepth());
+        System.out.println("minInfoGain: " + finalLrModel.getMinInfoGain());
+        System.out.println("minInstancesPerNode: " + finalLrModel.getMinInstancesPerNode());
+        System.out.println("minWeightFractionPerNode: " + finalLrModel.getMinWeightFractionPerNode());
 
         System.out.println("TEST --------------------------------------------------------------------------------------");
 
@@ -91,7 +86,7 @@ public class LinearRegression {
         System.out.println(acierto / (double) total);
     }
 
-    private static PipelineStage[] getPipeline(PCA pca, org.apache.spark.ml.regression.LinearRegression lr, Dataset<Row> dataset) {
+    private static PipelineStage[] getPipeline(PCA pca, RandomForestRegressor lr, Dataset<Row> dataset) {
 
         List<String> otherAttributes = new ArrayList<>();
 

@@ -4,13 +4,16 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import ui1.raullozano.bigfootball.common.model.Competition;
 import ui1.raullozano.bigfootball.common.model.extractor.Match;
-import ui1.raullozano.bigfootball.common.model.transformator.LineupStats;
-import ui1.raullozano.bigfootball.common.model.transformator.PlayerCombination;
-import ui1.raullozano.bigfootball.common.model.transformator.PlayerStats;
+import ui1.raullozano.bigfootball.common.model.transformator.ml.BestPlayerCombination;
+import ui1.raullozano.bigfootball.common.model.transformator.temp_stats.LineupStats;
+import ui1.raullozano.bigfootball.common.model.transformator.ml.PlayerCombination;
+import ui1.raullozano.bigfootball.common.model.transformator.temp_stats.PlayerStats;
 import ui1.raullozano.bigfootball.common.model.transformator.Team;
 import ui1.raullozano.bigfootball.common.utils.Time;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -209,14 +212,15 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public synchronized String getPlayerCombinationsFilePath() {
-        return data() + "/transformed/machine-learning/player_combinations.csv";
+    public Path getPlayerCombinationsToTrainPath() {
+        return Path.of(data() + "/transformed/machine-learning/train/player_combinations.csv");
     }
 
     @Override
-    public synchronized void savePlayerCombination(PlayerCombination playerCombination) {
+    public void savePlayerCombinationsToTrain(PlayerCombination playerCombination) {
         try {
-            File file = new File(data() + "/transformed/machine-learning/player_combinations.csv");
+            File file = new File(data() + "/transformed/machine-learning/train/player_combinations.csv");
+            Files.createDirectories(file.getParentFile().toPath());
             if (!file.exists()) Files.writeString(file.toPath(), playerCombination.header(), CREATE, APPEND, WRITE);
             Files.writeString(file.toPath(), playerCombination.toString(), CREATE, APPEND, WRITE);
         } catch(Throwable t) {
@@ -225,34 +229,58 @@ public class LocalFileAccessor implements FileAccessor {
     }
 
     @Override
-    public synchronized void saveLineupToMatch(String competition, String season, String lineup, String players, PlayerCombination line) {
+    public Path getPlayerCombinationToTestPath(String competition, String season) {
+        return Path.of(data() + "/transformed/machine-learning/test/" + competition + "/" + season + "/player_combinations.csv");
+    }
+
+    @Override
+    public void savePlayerCombinationToTest(String competition, String season, PlayerCombination playerCombination) {
         try {
             File file = new File(data() + "/transformed/machine-learning/test/" + competition + "/" + season + "/player_combinations.csv");
-            if (!file.exists()) {
-                Files.createDirectories(file.getParentFile().toPath());
-                Files.writeString(file.toPath(), "lineup;players;" + line.header(), CREATE, APPEND, WRITE);
-            }
-            Files.writeString(file.toPath(), lineup + ";" + players + ";" + line.toString(), CREATE, APPEND, WRITE);
-        } catch (Throwable t) {
+            Files.createDirectories(file.getParentFile().toPath());
+            if (!file.exists()) Files.writeString(file.toPath(), playerCombination.header(), CREATE, APPEND, WRITE);
+            Files.writeString(file.toPath(), playerCombination.toString(), CREATE, APPEND, WRITE);
+        } catch(Throwable t) {
             t.printStackTrace();
         }
     }
 
     @Override
-    public void removeLineupToMatch() {
+    public void removePlayerCombinationToTest() {
         try {
             File file = new File(data() + "/transformed/machine-learning/test/");
-            file.delete();
+            if(file.exists()) {
+                file.delete();
+            }
         } catch (Throwable t) {
             t.printStackTrace();
         }
     }
 
     @Override
-    public void saveBestLineupToMatch(String line) {
+    public String getBestPlayerCombination(String competition, String season, String thisTeam, String otherTeam, String lineup) {
+        try(BufferedReader reader = new BufferedReader(new FileReader(data() + "/transformed/machine-learning/best/" + competition + "/" + season + "/player_combinations.csv"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] fields = line.split(";");
+                if(!fields[0].equals(thisTeam)) continue;
+                if(!fields[1].equals(otherTeam)) continue;
+                if(!fields[2].equals(lineup)) continue;
+                return line;
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+
+        return null;
+    }
+
+    @Override
+    public void saveBestPlayerCombination(String competition, String season, BestPlayerCombination bestPlayerCombination) {
         try {
-            File file = new File(data() + "/transformed/machine-learning/player_combinations_best.csv");
-            Files.writeString(file.toPath(), line, WRITE, CREATE, APPEND);
+            File file = new File(data() + "/transformed/machine-learning/best/" + competition + "/" + season + "/player_combinations.csv");
+            Files.createDirectories(file.getParentFile().toPath());
+            Files.writeString(file.toPath(), bestPlayerCombination.toString(), WRITE, CREATE, APPEND);
         } catch (Throwable t) {
             t.printStackTrace();
         }

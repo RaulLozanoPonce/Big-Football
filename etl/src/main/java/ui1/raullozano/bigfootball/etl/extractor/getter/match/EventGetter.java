@@ -63,7 +63,9 @@ public class EventGetter {
     }
 
     private String player(Element element) {
-        return element.child(1).child(1).child(0).child(0).html();
+        Element subelement = element.child(1).child(1).child(0);
+        if(subelement.children().isEmpty()) return subelement.html();
+        return subelement.child(0).html();
     }
 
     private String otherPlayer(Element element) {

@@ -54,6 +54,14 @@ public class UIBox {
             return new TeamsApi(fileAccessor, queryParams).getResponse();
         });
 
+        get("/api/team-base/:season/:competition/:team", (req, res) -> {
+            Map<String, String> queryParams = new HashMap<>();
+            queryParams.put("season", req.params("season"));
+            queryParams.put("competition", req.params("competition"));
+            queryParams.put("team", req.params("team"));
+            return new TeamBaseApi(fileAccessor, queryParams).getResponse();
+        });
+
         get("/api/statistics/:season/:competition/:team", (req, res) -> {
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("season", req.params("season"));
@@ -62,22 +70,22 @@ public class UIBox {
             return new StatisticsApi(fileAccessor, queryParams).getResponse();
         });
 
-        get("/api/lineup/:season/:competition/:team/:lineup", (req, res) -> {
+        get("/api/lineups/:season/:competition/:team/:lineup", (req, res) -> {
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("season", req.params("season"));
             queryParams.put("competition", req.params("competition"));
             queryParams.put("team", req.params("team"));
             queryParams.put("lineup", req.params("lineup"));
-            return new LineupApi(fileAccessor, queryParams).getResponse();
+            return new LineupsApi(fileAccessor, queryParams).getResponse();
         });
 
-        get("/api/best-lineup/:season/:competition/:this-team/:other-team/:is-local", (req, res) -> {
+        get("/api/best-lineup/:season/:competition/:this-team/:other-team/:lineup", (req, res) -> {
             Map<String, String> queryParams = new HashMap<>();
             queryParams.put("season", req.params("season"));
             queryParams.put("competition", req.params("competition"));
             queryParams.put("this-team", req.params("this-team"));
             queryParams.put("other-team", req.params("other-team"));
-            queryParams.put("is-local", req.params("is-local"));
+            queryParams.put("lineup", req.params("lineup"));
             return new BestLineupApi(fileAccessor, queryParams).getResponse();
         });
     }
@@ -164,5 +172,6 @@ public class UIBox {
         get("/team", (req, res) -> new TeamTemplate().getHtml());
         get("/statistics", (req, res) -> new StatisticsTemplate().getHtml());
         get("/lineups", (req, res) -> new LineupsTemplate().getHtml());
+        get("/best-lineup-prediction", (req, res) -> new BestLineupPredictionTemplate().getHtml());
     }
 }

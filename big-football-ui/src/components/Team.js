@@ -21,6 +21,7 @@ class Team extends Component {
                 <div id="teamOptions">
                     <Option title="Estadísticas del equipo" actionFunction={ () => this.loadStatistics() } />
                     <Option title="Mejores alineaciones" actionFunction={ () => this.loadLineups() } />
+                    <Option title="Alineación pre-partido" actionFunction={ () => this.loadLineupPrediction() } />
                 </div>
             </div>
         );
@@ -32,6 +33,10 @@ class Team extends Component {
 
     loadLineups() {
         redirect("lineups?competition=" + this.competition + "&season=" + this.season + "&team=" + this.team);
+    }
+
+    loadLineupPrediction() {
+        redirect("best-lineup-prediction?competition=" + this.competition + "&season=" + this.season + "&team=" + this.team);
     }
 }
 

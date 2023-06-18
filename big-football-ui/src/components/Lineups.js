@@ -23,8 +23,6 @@ class Statistics extends Component {
         this.bestAttackingLineup = [];
         this.bestFoulsLineup = [];
 
-        this.lineup = null;
-
         this.loadLineups = this.loadLineups.bind(this);
     }
 
@@ -56,10 +54,10 @@ class Statistics extends Component {
         );
     }
 
-    loadLineups(e) {
+    componentDidMount() {
+        document.getElementById("lineup-selector").value = "4-3-3";
 
-        var self = this;
-        AjaxGet(urlBase + "/api/lineup/" + this.season + "/" + this.competition + "/" + this.team + "/" + document.getElementById("lineup-selector").value, {}, function(content) {
+        AjaxGet(urlBase + "/api/team-base/" + this.season + "/" + this.competition + "/" + this.team, {}, function(content) {
 
             var team = JSON.parse(content);
 
@@ -67,20 +65,29 @@ class Statistics extends Component {
             document.getElementById("won-matches").innerHTML = team.won;
             document.getElementById("draw-matches").innerHTML = team.draw;
             document.getElementById("lost-matches").innerHTML = team.lost;
-            document.getElementById("participating-players").innerHTML = team.participatingPlayers;
-
-            self.bestDefensiveLineup = self.getSquadTable(team.bestDefensiveLineup);
-            self.bestPassingLineup = self.getSquadTable(team.bestPassingLineup);
-            self.bestAttackingLineup = self.getSquadTable(team.bestAttackingLineup);
-            self.bestFoulsLineup = self.getSquadTable(team.bestFoulsLineup);
+            document.getElementById("participating-players").innerHTML = team.squad.length;
 
             self.forceUpdate();
         });
+
+        this.loadLineups();
     }
 
-    componentDidMount() {
-        document.getElementById("lineup-selector").value = "4-3-3";
-        this.loadLineups();
+    loadLineups(e) {
+
+        var self = this;
+
+        AjaxGet(urlBase + "/api/lineups/" + this.season + "/" + this.competition + "/" + this.team + "/" + document.getElementById("lineup-selector").value, {}, function(content) {
+
+            var lineups = JSON.parse(content);
+
+            self.bestDefensiveLineup = self.getSquadTable(lineups.bestDefensiveLineup);
+            self.bestPassingLineup = self.getSquadTable(lineups.bestPassingLineup);
+            self.bestAttackingLineup = self.getSquadTable(lineups.bestAttackingLineup);
+            self.bestFoulsLineup = self.getSquadTable(lineups.bestFoulsLineup);
+
+            self.forceUpdate();
+        });
     }
 
     getSquadTable(players) {

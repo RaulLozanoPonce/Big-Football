@@ -3,9 +3,9 @@ package ui1.raullozano.bigfootball.etl.transformator;
 import ui1.raullozano.bigfootball.common.files.FileAccessor;
 import ui1.raullozano.bigfootball.common.model.extractor.Match;
 import ui1.raullozano.bigfootball.common.model.extractor.TeamMatch;
-import ui1.raullozano.bigfootball.common.model.transformator.LineupStats;
-import ui1.raullozano.bigfootball.common.model.transformator.PlayerCombination;
-import ui1.raullozano.bigfootball.common.model.transformator.PlayerStats;
+import ui1.raullozano.bigfootball.common.model.transformator.temp_stats.LineupStats;
+import ui1.raullozano.bigfootball.common.model.transformator.ml.PlayerCombination;
+import ui1.raullozano.bigfootball.common.model.transformator.temp_stats.PlayerStats;
 import ui1.raullozano.bigfootball.common.model.transformator.Team;
 import ui1.raullozano.bigfootball.etl.transformator.transformators.*;
 
@@ -82,7 +82,7 @@ public class Transformator {
         }
 
         for (PlayerCombination playerCombination : playerCombinations) {
-            this.fileAccessor.savePlayerCombination(playerCombination);
+            this.fileAccessor.savePlayerCombinationsToTrain(playerCombination);
         }
 
         this.fileAccessor.savePlayerLastStats(competition, String.valueOf(year), playerLastStats);

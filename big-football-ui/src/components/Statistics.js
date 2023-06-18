@@ -82,7 +82,9 @@ class Statistics extends Component {
 
     componentDidMount() {
         var self = this;
-        AjaxGet(urlBase + "/api/statistics/" + this.season + "/" + this.competition + "/" + this.team, {}, function(content) {
+
+        AjaxGet(urlBase + "/api/team-base/" + this.season + "/" + this.competition + "/" + this.team, {}, function(content) {
+
             var team = JSON.parse(content);
 
             document.getElementById("played-matches").innerHTML = team.playedMatches;
@@ -92,19 +94,26 @@ class Statistics extends Component {
             document.getElementById("participating-players").innerHTML = team.squad.length;
 
             self.squad = self.getSquadTable(team.squad);
-            self.regularLineup = self.getSquadTable(team.regularLineup);
-            self.regularLineupMinutes = team.regularLineupMinutes;
-            self.starterLineup = self.getStarterSquadTable(team.startingLineup);
-            self.moreWonMinutesLineup = self.getSquadTable(team.moreWonMinutesLineup);
-            self.moreWonMinutesLineupMinutes = team.moreWonMinutesLineupMinutes;
-            self.moreGoalsForByMinuteLineup = self.getSquadTable(team.moreGoalsForByMinuteLineup);
-            self.moreGoalsForByMinuteLineupMinutes = team.moreGoalsForByMinuteLineupMinutes;
-            self.moreGoalsForByMinuteLineupGoals = team.moreGoalsForByMinuteLineupGoals;
-            self.lessGoalsAgainstByMinuteLineup = self.getSquadTable(team.lessGoalsAgainstByMinuteLineup);
-            self.lessGoalsAgainstByMinuteLineupMinutes = team.lessGoalsAgainstByMinuteLineupMinutes;
-            self.lessGoalsAgainstByMinuteLineupGoals = team.lessGoalsAgainstByMinuteLineupGoals;
-            self.bestLineup = self.getSquadTable(team.bestLineup);
-            self.bestLineupScore = team.bestLineupScore;
+
+            self.forceUpdate();
+        });
+
+        AjaxGet(urlBase + "/api/statistics/" + this.season + "/" + this.competition + "/" + this.team, {}, function(content) {
+            var statistics = JSON.parse(content);
+
+            self.regularLineup = self.getSquadTable(statistics.regularLineup);
+            self.regularLineupMinutes = statistics.regularLineupMinutes;
+            self.starterLineup = self.getStarterSquadTable(statistics.startingLineup);
+            self.moreWonMinutesLineup = self.getSquadTable(statistics.moreWonMinutesLineup);
+            self.moreWonMinutesLineupMinutes = statistics.moreWonMinutesLineupMinutes;
+            self.moreGoalsForByMinuteLineup = self.getSquadTable(statistics.moreGoalsForByMinuteLineup);
+            self.moreGoalsForByMinuteLineupMinutes = statistics.moreGoalsForByMinuteLineupMinutes;
+            self.moreGoalsForByMinuteLineupGoals = statistics.moreGoalsForByMinuteLineupGoals;
+            self.lessGoalsAgainstByMinuteLineup = self.getSquadTable(statistics.lessGoalsAgainstByMinuteLineup);
+            self.lessGoalsAgainstByMinuteLineupMinutes = statistics.lessGoalsAgainstByMinuteLineupMinutes;
+            self.lessGoalsAgainstByMinuteLineupGoals = statistics.lessGoalsAgainstByMinuteLineupGoals;
+            self.bestLineup = self.getSquadTable(statistics.bestLineup);
+            self.bestLineupScore = statistics.bestLineupScore;
 
             self.forceUpdate();
         });

@@ -5,6 +5,9 @@ import ui1.raullozano.bigfootball.common.model.extractor.MatchEvent;
 import ui1.raullozano.bigfootball.common.model.extractor.TeamMatch;
 import ui1.raullozano.bigfootball.common.model.extractor.stats.Stat;
 import ui1.raullozano.bigfootball.common.model.transformator.*;
+import ui1.raullozano.bigfootball.common.model.transformator.ml.PlayerCombination;
+import ui1.raullozano.bigfootball.common.model.transformator.temp_stats.LineupStats;
+import ui1.raullozano.bigfootball.common.model.transformator.temp_stats.PlayerStats;
 import ui1.raullozano.bigfootball.common.utils.MatchUtils;
 
 import java.nio.charset.StandardCharsets;
