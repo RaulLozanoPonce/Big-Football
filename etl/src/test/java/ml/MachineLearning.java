@@ -2,7 +2,6 @@ package ml;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.ml.feature.PCA;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -29,11 +28,10 @@ public class MachineLearning {
         Dataset<Row> trainingData = splits[0];
         Dataset<Row> testData = splits[1];
 
-        PCA pca = new PCA().setInputCol("finalFeatures").setOutputCol("features");
-        //LinearRegression.execute(pca, dataset, trainingData, testData);
+        LinearRegression.execute(dataset, trainingData, testData);
         System.out.println("-----------------------------------------------------------------------------------------------------------------------");
-        DecisionTreeRegression.execute(pca, dataset, trainingData, testData);
+        DecisionTreeRegression.execute(dataset, trainingData, testData);
         System.out.println("-----------------------------------------------------------------------------------------------------------------------");
-        //RandomForestRegression.execute(pca, dataset, trainingData, testData);
+        RandomForestRegression.execute(dataset, trainingData, testData);
     }
 }

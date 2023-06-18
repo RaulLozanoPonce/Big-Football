@@ -19,18 +19,19 @@ import java.util.List;
 
 public class RandomForestRegression {
 
-    public static void execute(PCA pca, Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
+    public static void execute(Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
 
-        RandomForestRegressor lr = new RandomForestRegressor();
-        Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
+        RandomForestRegressor rf = new RandomForestRegressor();
+        PCA pca = new PCA().setInputCol("finalFeatures").setOutputCol("features");
+        Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, rf, dataset));
 
         ParamMap[] paramGrid = new ParamGridBuilder()
-                .addGrid(pca.k(), new int[] {300})
-                .addGrid(lr.maxBins(), new int[] {16, 64})
-                .addGrid(lr.maxDepth(), new int[] {5, 9})
-                .addGrid(lr.minInfoGain(), new double[] {0.0, 0.2})
-                .addGrid(lr.minInstancesPerNode(), new int[] {1, 3})
-                .addGrid(lr.minWeightFractionPerNode(), new double[] {0.0})
+                .addGrid(pca.k(), new int[] {150})
+                .addGrid(rf.maxBins(), new int[] {16})
+                .addGrid(rf.maxDepth(), new int[] {5})
+                .addGrid(rf.minInfoGain(), new double[] {0.1})
+                .addGrid(rf.minInstancesPerNode(), new int[] {14})
+                .addGrid(rf.minWeightFractionPerNode(), new double[] {0.0})
                 .build();
 
         RegressionEvaluator evaluator = new RegressionEvaluator().setMetricName("r2");
@@ -44,28 +45,27 @@ public class RandomForestRegression {
         CrossValidatorModel cvModel = cv.fit(trainingData);
 
         PCA finalPca =  (PCA) ((Pipeline) cvModel.bestModel().parent()).getStages()[5];
-        RandomForestRegressionModel finalLrModel = (RandomForestRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];
+        RandomForestRegressionModel finalRfModel = (RandomForestRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];
 
-        System.out.println("MEJOR CONFIGURACION -----------------------------------------------------------------------");
+        System.out.println("MEJOR CONFIGURACION RANDOM FOREST ---------------------------------------------------------");
 
         System.out.println("K de PCA: " + finalPca.getK());
-        System.out.println("maxBins: " + finalLrModel.getMaxBins());
-        System.out.println("maxDepth: " + finalLrModel.getMaxDepth());
-        System.out.println("minInfoGain: " + finalLrModel.getMinInfoGain());
-        System.out.println("minInstancesPerNode: " + finalLrModel.getMinInstancesPerNode());
-        System.out.println("minWeightFractionPerNode: " + finalLrModel.getMinWeightFractionPerNode());
-
-        System.out.println("TEST --------------------------------------------------------------------------------------");
+        System.out.println("maxBins: " + finalRfModel.getMaxBins());
+        System.out.println("maxDepth: " + finalRfModel.getMaxDepth());
+        System.out.println("minInfoGain: " + finalRfModel.getMinInfoGain());
+        System.out.println("minInstancesPerNode: " + finalRfModel.getMinInstancesPerNode());
+        System.out.println("minWeightFractionPerNode: " + finalRfModel.getMinWeightFractionPerNode());
+        System.out.println("TEST RANDOM FOREST ------------------------------------------------------------------------");
 
         Dataset<Row> transform = cvModel.transform(testData);
-        System.out.println("Test: " + evaluator.evaluate(transform));
+        System.out.println("Test r2: " + evaluator.evaluate(transform));
 
-        System.out.println("-------------------------------------------------------------------------------------------");
+        System.out.println("PREDICCIONES RANDOM FOREST ----------------------------------------------------------------");
 
         List<Row> testList = testData.select("label").collectAsList();
         List<Row> transformList = transform.select("prediction").collectAsList();
 
-        int acierto = 0;
+        int success = 0;
         int total = 0;
 
         for (int i = 0; i < testList.size(); i++) {
@@ -73,20 +73,20 @@ public class RandomForestRegression {
             Double predictValue = (Double) transformList.get(i).get(0);
 
             if(realValue < 0.5 && realValue > -0.5 && predictValue < 0.5 && predictValue > -0.5) {
-                acierto++;
+                success++;
             } else if (realValue >= 0.5 && predictValue >= 0.5) {
-                acierto++;
+                success++;
             } else if (realValue <= -0.5 && predictValue <= -0.5) {
-                acierto++;
+                success++;
             }
 
             total++;
         }
 
-        System.out.println(acierto / (double) total);
+        System.out.println("Porcentaje acierto modelo: " + (100 * success / (double) total) + " %");
     }
 
-    private static PipelineStage[] getPipeline(PCA pca, RandomForestRegressor lr, Dataset<Row> dataset) {
+    private static PipelineStage[] getPipeline(PCA pca, RandomForestRegressor rf, Dataset<Row> dataset) {
 
         List<String> otherAttributes = new ArrayList<>();
 
@@ -130,7 +130,7 @@ public class RandomForestRegression {
                 scaler,
                 vectorAssembler2,
                 pca,
-                lr
+                rf
         };
     }
 }

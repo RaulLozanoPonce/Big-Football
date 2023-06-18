@@ -8,29 +8,32 @@ import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.param.ParamMap;
 import org.apache.spark.ml.regression.DecisionTreeRegressionModel;
 import org.apache.spark.ml.regression.DecisionTreeRegressor;
+import org.apache.spark.ml.regression.LinearRegressionTrainingSummary;
 import org.apache.spark.ml.tuning.CrossValidator;
 import org.apache.spark.ml.tuning.CrossValidatorModel;
 import org.apache.spark.ml.tuning.ParamGridBuilder;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DecisionTreeRegression {
 
-    public static void execute(PCA pca, Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
+    public static void execute(Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
 
-        DecisionTreeRegressor lr = new DecisionTreeRegressor();
-        Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
+        DecisionTreeRegressor dt = new DecisionTreeRegressor();
+        PCA pca = new PCA().setInputCol("finalFeatures").setOutputCol("features");
+        Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, dt, dataset));
 
         ParamMap[] paramGrid = new ParamGridBuilder()
                 .addGrid(pca.k(), new int[] {150})
-                .addGrid(lr.maxBins(), new int[] {16})
-                .addGrid(lr.maxDepth(), new int[] {5})
-                .addGrid(lr.minInfoGain(), new double[] {0.1})
-                .addGrid(lr.minInstancesPerNode(), new int[] {14})
-                .addGrid(lr.minWeightFractionPerNode(), new double[] {0.0})
+                .addGrid(dt.maxBins(), new int[] {16})
+                .addGrid(dt.maxDepth(), new int[] {5})
+                .addGrid(dt.minInfoGain(), new double[] {0.1})
+                .addGrid(dt.minInstancesPerNode(), new int[] {14})
+                .addGrid(dt.minWeightFractionPerNode(), new double[] {0.0})
                 .build();
 
         RegressionEvaluator evaluator = new RegressionEvaluator().setMetricName("r2");
@@ -44,28 +47,28 @@ public class DecisionTreeRegression {
         CrossValidatorModel cvModel = cv.fit(trainingData);
 
         PCA finalPca = (PCA) ((Pipeline) cvModel.bestModel().parent()).getStages()[5];
-        DecisionTreeRegressionModel finalLrModel = (DecisionTreeRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];
+        DecisionTreeRegressionModel finalDtModel = (DecisionTreeRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];
 
-        System.out.println("MEJOR CONFIGURACION -----------------------------------------------------------------------");
+        System.out.println("MEJOR CONFIGURACION ÁRBOL DECISIÓN --------------------------------------------------------");
 
         System.out.println("K de PCA: " + finalPca.getK());
-        System.out.println("maxBins: " + finalLrModel.getMaxBins());
-        System.out.println("maxDepth: " + finalLrModel.getMaxDepth());
-        System.out.println("minInfoGain: " + finalLrModel.getMinInfoGain());
-        System.out.println("minInstancesPerNode: " + finalLrModel.getMinInstancesPerNode());
-        System.out.println("minWeightFractionPerNode: " + finalLrModel.getMinWeightFractionPerNode());
+        System.out.println("maxBins: " + finalDtModel.getMaxBins());
+        System.out.println("maxDepth: " + finalDtModel.getMaxDepth());
+        System.out.println("minInfoGain: " + finalDtModel.getMinInfoGain());
+        System.out.println("minInstancesPerNode: " + finalDtModel.getMinInstancesPerNode());
+        System.out.println("minWeightFractionPerNode: " + finalDtModel.getMinWeightFractionPerNode());
 
-        System.out.println("TEST --------------------------------------------------------------------------------------");
+        System.out.println("TEST ÁRBOL DECISIÓN -----------------------------------------------------------------------");
 
         Dataset<Row> transform = cvModel.transform(testData);
-        System.out.println("Test: " + evaluator.evaluate(transform));
+        System.out.println("Test r2: " + evaluator.evaluate(transform));
 
-        System.out.println("-------------------------------------------------------------------------------------------");
+        System.out.println("PREDICCIONES ÁRBOL DECISIÓN ---------------------------------------------------------------");
 
         List<Row> testList = testData.select("label").collectAsList();
         List<Row> transformList = transform.select("prediction").collectAsList();
 
-        int acierto = 0;
+        int success = 0;
         int total = 0;
 
         for (int i = 0; i < testList.size(); i++) {
@@ -73,20 +76,20 @@ public class DecisionTreeRegression {
             Double predictValue = (Double) transformList.get(i).get(0);
 
             if(realValue < 0.5 && realValue > -0.5 && predictValue < 0.5 && predictValue > -0.5) {
-                acierto++;
+                success++;
             } else if (realValue >= 0.5 && predictValue >= 0.5) {
-                acierto++;
+                success++;
             } else if (realValue <= -0.5 && predictValue <= -0.5) {
-                acierto++;
+                success++;
             }
 
             total++;
         }
 
-        System.out.println(acierto / (double) total);
+        System.out.println("Porcentaje acierto modelo: " + (100 * success / (double) total) + " %");
     }
 
-    private static PipelineStage[] getPipeline(PCA pca, DecisionTreeRegressor lr, Dataset<Row> dataset) {
+    private static PipelineStage[] getPipeline(PCA pca, DecisionTreeRegressor dt, Dataset<Row> dataset) {
 
         List<String> otherAttributes = new ArrayList<>();
 
@@ -130,7 +133,7 @@ public class DecisionTreeRegression {
                 scaler,
                 vectorAssembler2,
                 pca,
-                lr
+                dt
         };
     }
 }

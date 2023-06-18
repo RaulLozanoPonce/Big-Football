@@ -20,9 +20,11 @@ import java.util.List;
 
 public class LinearRegression {
 
-    public static void execute(PCA pca, Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
+    public static void execute(Dataset<Row> dataset, Dataset<Row> trainingData, Dataset<Row> testData) {
 
         org.apache.spark.ml.regression.LinearRegression lr = new org.apache.spark.ml.regression.LinearRegression();
+        PCA pca = new PCA().setInputCol("finalFeatures").setOutputCol("features");
+
         Pipeline pipeline = new Pipeline().setStages(getPipeline(pca, lr, dataset));
 
         ParamMap[] paramGrid = new ParamGridBuilder()
@@ -40,38 +42,30 @@ public class LinearRegression {
                 .setEstimatorParamMaps(paramGrid)
                 .setNumFolds(5);
 
-        long millis = Instant.now().toEpochMilli();
-
         CrossValidatorModel cvModel = cv.fit(trainingData);
 
         PCA finalPca =  (PCA) ((Pipeline) cvModel.bestModel().parent()).getStages()[5];
         LinearRegressionModel finalLrModel = (LinearRegressionModel) ((PipelineModel) cvModel.bestModel()).stages()[6];
 
-        System.out.println("Time: " + ((Instant.now().toEpochMilli() - millis) / 1000.0) + " segundos");
-
-        //System.out.println("Coefficients: " + finalLrModel.coefficients() + " Intercept: " + finalLrModel.intercept());
-
-        System.out.println("MEJOR CONFIGURACION -----------------------------------------------------------------------");
+        System.out.println("MEJOR CONFIGURACION REGRESIÓN LINEAL ------------------------------------------------------");
 
         System.out.println("K de PCA: " + finalPca.getK());
         System.out.println("maxIter: " + finalLrModel.getMaxIter());
         System.out.println("regParam: " + finalLrModel.getRegParam());
         System.out.println("elasticNetParam: " + finalLrModel.getElasticNetParam());
-        //System.out.println("aggregationDepth: " + finalLrModel.getAggregationDepth());
-        LinearRegressionTrainingSummary trainingSummary = finalLrModel.summary();
-        System.out.println("r2: " + trainingSummary.r2());
+        System.out.println("Training r2: " + finalLrModel.summary().r2());
 
-        System.out.println("TEST --------------------------------------------------------------------------------------");
+        System.out.println("TEST REGRESIÓN LINEAL ---------------------------------------------------------------------");
 
         Dataset<Row> transform = cvModel.transform(testData);
-        System.out.println("Test: " + evaluator.evaluate(transform));
+        System.out.println("Test r2: " + evaluator.evaluate(transform));
 
-        System.out.println("-------------------------------------------------------------------------------------------");
+        System.out.println("PREDICCIONES REGRESIÓN LINEAL -------------------------------------------------------------");
 
         List<Row> testList = testData.select("label").collectAsList();
         List<Row> transformList = transform.select("prediction").collectAsList();
 
-        int acierto = 0;
+        int success = 0;
         int total = 0;
 
         for (int i = 0; i < testList.size(); i++) {
@@ -79,17 +73,17 @@ public class LinearRegression {
             Double predictValue = (Double) transformList.get(i).get(0);
 
             if(realValue < 0.5 && realValue > -0.5 && predictValue < 0.5 && predictValue > -0.5) {
-                acierto++;
+                success++;
             } else if (realValue >= 0.5 && predictValue >= 0.5) {
-                acierto++;
+                success++;
             } else if (realValue <= -0.5 && predictValue <= -0.5) {
-                acierto++;
+                success++;
             }
 
             total++;
         }
 
-        System.out.println(acierto / (double) total);
+        System.out.println("Porcentaje acierto modelo: " + (100 * success / (double) total) + " %");
     }
 
     private static PipelineStage[] getPipeline(PCA pca, org.apache.spark.ml.regression.LinearRegression lr, Dataset<Row> dataset) {

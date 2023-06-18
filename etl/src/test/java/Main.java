@@ -16,7 +16,7 @@ public class Main {
 
         FileAccessor fileAccessor = new LocalFileAccessor();
 
-        for (Instant instant : Time.getInstantsBetween(Time.getInstantOf(2023, 5, 23), Time.getInstantOf(2023, 6, 16), Time.Scale.D)) {
+        for (Instant instant : Time.getInstantsBetween(Time.getInstantOf(2021, 3, 14), Time.getInstantOf(2021, 3, 15), Time.Scale.D)) {
             Map<Competition, List<Match>> matches = new Extractor(fileAccessor).extractMatches(instant);
 
             for (Competition competition : matches.keySet()) {

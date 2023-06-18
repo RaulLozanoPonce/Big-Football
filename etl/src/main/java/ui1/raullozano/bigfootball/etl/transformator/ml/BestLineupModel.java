@@ -42,7 +42,7 @@ public class BestLineupModel {
 
     public void get() {
 
-        //saveAllTeamsCombinations();
+        saveAllTeamsCombinations();
 
         SparkSession session = getSession();
         Dataset<Row> dataset = getDataset(session, fileAccessor.getPlayerCombinationsToTrainPath());
@@ -58,9 +58,11 @@ public class BestLineupModel {
                 Map<String, List<Row>> predictionsByTeam = predictions.stream().collect(Collectors.groupingBy(r -> r.getString(0)));
 
                 for (String thisTeam : predictionsByTeam.keySet()) {
-                    Map<String, List<Row>> predictionsByOtherTeam = predictionsByTeam.get(thisTeam).stream().collect(Collectors.groupingBy(r -> r.getString(1)));
+                    Map<String, List<Row>> predictionsByOtherTeam = predictionsByTeam.get(thisTeam).stream()
+                            .collect(Collectors.groupingBy(r -> r.getString(1)));
                     for (String otherTeam : predictionsByOtherTeam.keySet()) {
-                        Map<String, List<Row>> predictionsByLineup = predictionsByOtherTeam.get(otherTeam).stream().collect(Collectors.groupingBy(r -> r.getString(2)));
+                        Map<String, List<Row>> predictionsByLineup = predictionsByOtherTeam.get(otherTeam).stream()
+                                .collect(Collectors.groupingBy(r -> r.getString(2)));
                         for (String lineup : predictionsByLineup.keySet()) {
                             List<Row> lineupPredictions = predictionsByLineup.get(lineup);
                             if(!lineupPredictions.isEmpty()) {
@@ -90,8 +92,7 @@ public class BestLineupModel {
             }
         }
 
-        //TODO
-        //this.fileAccessor.removePlayerCombinationToTest();
+        this.fileAccessor.removePlayerCombinationToTest();
     }
 
     private SparkSession getSession() {
@@ -224,26 +225,32 @@ public class BestLineupModel {
 
     private void saveCombinationsOf(String competition, String season, Team thisTeam, Team otherTeam, List<Player> otherTeamLineup, Integer[] lineup) {
 
-        List<List<Player>> defenseCombination = allCombinationsOf(lineup[0], thisTeam.players().stream().filter(p -> p.finalPosition() == Position.DF)
+        List<List<Player>> defenseCombination = allCombinationsOf(lineup[0], thisTeam.players().stream()
+                .filter(p -> p.matches().minutes() >= 350)
+                .filter(p -> p.finalPosition() == Position.DF)
                 .collect(Collectors.toList()));
-        List<List<Player>> midfieldCombination = allCombinationsOf(lineup[1], thisTeam.players().stream().filter(p -> p.finalPosition() == Position.CC)
+        List<List<Player>> midfieldCombination = allCombinationsOf(lineup[1], thisTeam.players().stream()
+                .filter(p -> p.matches().minutes() >= 350)
+                .filter(p -> p.finalPosition() == Position.CC)
                 .collect(Collectors.toList()));
-        List<List<Player>> forwarderCombination = allCombinationsOf(lineup[2], thisTeam.players().stream().filter(p -> p.finalPosition() == Position.DL)
+        List<List<Player>> forwarderCombination = allCombinationsOf(lineup[2], thisTeam.players().stream()
+                .filter(p -> p.matches().minutes() >= 350)
+                .filter(p -> p.finalPosition() == Position.DL)
                 .collect(Collectors.toList()));
 
         List<List<Player>> finalDefenseCombination = defenseCombination.stream()
                 .sorted((l1, l2) -> Integer.compare(minutesOf(l2), minutesOf(l1)))
-                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[0] + 1, 3), defenseCombination.size()));
+                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[0] + 2, 3), defenseCombination.size()));
         List<List<Player>> finalMidfielderCombination = midfieldCombination.stream()
                 .sorted((l1, l2) -> Integer.compare(minutesOf(l2), minutesOf(l1)))
-                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[1] + 1, 3), midfieldCombination.size()));
+                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[1] + 2, 3), midfieldCombination.size()));
         List<List<Player>> finalForwarderCombination = forwarderCombination.stream()
                 .sorted((l1, l2) -> Integer.compare(minutesOf(l2), minutesOf(l1)))
-                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[2] + 1, 3), forwarderCombination.size()));
+                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[2] + 2, 3), forwarderCombination.size()));
 
-        List<PlayerCombination> lines = new ArrayList<>();
+        List<PlayerCombination> playerCombinations = new ArrayList<>();
 
-        for (Player goalkeeper : thisTeam.players().stream().filter(p -> p.finalPosition() == PT).collect(Collectors.toList())) {
+        for (Player goalkeeper : thisTeam.players().stream().filter(p -> p.matches().minutes() >= 350).filter(p -> p.finalPosition() == PT).collect(Collectors.toList())) {
             for (List<Player> defenses : finalDefenseCombination) {
                 for (List<Player> midfielders : finalMidfielderCombination) {
                     for (List<Player> forwarders : finalForwarderCombination) {
@@ -252,17 +259,17 @@ public class BestLineupModel {
                         thisPlayers.addAll(defenses);
                         thisPlayers.addAll(midfielders);
                         thisPlayers.addAll(forwarders);
-                        PlayerCombination line = lineOf(thisTeam, otherTeam, thisPlayers, otherTeamLineup, lineupOf(lineup));
+                        PlayerCombination line = playerCombinationOf(thisTeam, otherTeam, thisPlayers, otherTeamLineup, lineupOf(lineup));
                         if(line != null) {
-                            lines.add(line);
+                            playerCombinations.add(line);
                         }
                     }
                 }
             }
         }
 
-        for (PlayerCombination line : lines) {
-            this.fileAccessor.savePlayerCombinationToTest(competition, season, line);
+        for (PlayerCombination playerCombination : playerCombinations) {
+            this.fileAccessor.savePlayerCombinationToTest(competition, season, playerCombination);
         }
     }
 
@@ -274,7 +281,7 @@ public class BestLineupModel {
         return lineup.stream().mapToInt(p -> p.matches().minutes()).sum();
     }
 
-    private PlayerCombination lineOf(Team thisTeam, Team otherTeam, List<Player> thisPlayers, List<Player> otherPlayers, String lineup) {
+    private PlayerCombination playerCombinationOf(Team thisTeam, Team otherTeam, List<Player> thisPlayers, List<Player> otherPlayers, String lineup) {
 
         if(thisPlayers.stream().map(p -> lineupStats.get(p.id())).anyMatch(Objects::isNull)) return null;
         if(otherPlayers.stream().map(p -> lineupStats.get(p.id())).anyMatch(Objects::isNull)) return null;

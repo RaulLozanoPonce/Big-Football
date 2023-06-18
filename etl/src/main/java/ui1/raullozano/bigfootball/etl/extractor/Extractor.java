@@ -39,7 +39,9 @@ public class Extractor {
                     System.out.println("Se va a extraer: " + matchUrl);
                     matches.putIfAbsent(competition, new ArrayList<>());
                     Match match = new MatchGetter(matchUrl).get();
-                    matches.get(competition).add(match);
+                    if(match != null) {
+                        matches.get(competition).add(match);
+                    }
                     Thread.sleep(10000);
                 }
             }

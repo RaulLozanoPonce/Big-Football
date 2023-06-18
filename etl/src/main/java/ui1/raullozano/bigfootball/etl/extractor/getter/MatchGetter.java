@@ -25,6 +25,12 @@ public class MatchGetter {
             EventGetter eventGetter = new EventGetter(doc);
             StatsGetter statsGetter = new StatsGetter(doc);
 
+            if(doc.getElementsByClass("scorebox").get(0).children().get(0)
+                    .children().get(1).getElementsByClass("score").html().equals("--")) return null;
+
+            if(doc.getElementsByClass("scorebox").get(0).children().get(1)
+                    .children().get(1).getElementsByClass("score").html().equals("--")) return null;
+
             match.homeTeam(headerGetter.team("home"));
             match.awayTeam(headerGetter.team("away"));
             match.ts(headerGetter.ts());
