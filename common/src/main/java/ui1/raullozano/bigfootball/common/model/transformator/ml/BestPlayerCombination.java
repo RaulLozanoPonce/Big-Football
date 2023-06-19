@@ -15,11 +15,11 @@ public class BestPlayerCombination {
         this.goals = Long.parseLong(line.split(";")[3]);
         this.players = new Gson().fromJson(line.split(";")[4], new TypeToken<List<String>>(){}.getType());
     }
+
     private String thisTeam;
     private String otherTeam;
     private String lineup;
     private long goals;
-
     private List<String> players;
 
     public BestPlayerCombination thisTeam(String thisTeam) {

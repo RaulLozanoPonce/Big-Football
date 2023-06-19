@@ -12,16 +12,16 @@ public class Player {
     private final String name;
     private final Map<Position, Integer> position = new HashMap<>();
     private int age;
-    private final MatchesStatistics matches;
-    private final ClutchStatistics clutch;
-    private final SubstitutionsStatistics substitutions;
+    private final MatchesStatistics matchesStatistics;
+    private final ClutchStatistics clutchStatistics;
+    private final SubstitutionsStatistics substitutionsStatistics;
 
     public Player(String teamName, String name) {
         this.id = Base64.getEncoder().encodeToString((teamName + "-" + name).getBytes(StandardCharsets.UTF_8));
         this.name = name;
-        this.matches = new MatchesStatistics();
-        this.clutch = new ClutchStatistics();
-        this.substitutions = new SubstitutionsStatistics();
+        this.matchesStatistics = new MatchesStatistics();
+        this.clutchStatistics = new ClutchStatistics();
+        this.substitutionsStatistics = new SubstitutionsStatistics();
     }
 
     public String id() {
@@ -76,15 +76,15 @@ public class Player {
     }
 
     public MatchesStatistics matches() {
-        return matches;
+        return matchesStatistics;
     }
 
     public ClutchStatistics clutch() {
-        return clutch;
+        return clutchStatistics;
     }
 
     public SubstitutionsStatistics substitutions() {
-        return substitutions;
+        return substitutionsStatistics;
     }
 
     public static class MatchesStatistics {

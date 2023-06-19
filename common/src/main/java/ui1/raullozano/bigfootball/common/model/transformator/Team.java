@@ -16,8 +16,8 @@ public class Team {
     private int lost = 0;
     private int totalPositiveClutchMatches = 0;
     private int totalNegativeClutchMatches = 0;
-    private Map<String, Integer> goalsFor = new HashMap<>();
-    private Map<String, Integer> goalsAgainst = new HashMap<>();
+    private final Map<String, Integer> goalsFor = new HashMap<>();
+    private final Map<String, Integer> goalsAgainst = new HashMap<>();
     private final Map<String, LineupStatistics> lineupStatistics = new HashMap<>();
 
     public Team(String name) {

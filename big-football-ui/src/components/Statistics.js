@@ -36,7 +36,8 @@ class Statistics extends Component {
     render() {
         return (
             <div className="Statistics">
-                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }/>
+                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }
+                    prevUrl={"team?competition=" + this.competition + "&season=" + this.season + "&team=" + this.team}/>
                 <TeamHeader />
                 <div id="statistics-content">
                     <div className="statistics-content-column" style={{ width:'34%' }}>

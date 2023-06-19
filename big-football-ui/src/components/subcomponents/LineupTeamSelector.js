@@ -17,6 +17,7 @@ class LineupSelector extends Component {
                     <option value="5-4-1">"5-4-1"</option>
                     <option value="5-3-2">"5-3-2"</option>
                 </select>
+                <p>Equipo rival:</p>
                 <select id={this.props.selectTeamId}></select>
                 <button onClick={this.props.loadFunction}>Consultar</button>
             </div>

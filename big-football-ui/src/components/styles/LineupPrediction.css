@@ -24,3 +24,9 @@
      height: 400px;
      border: 0;
 }
+
+#goal-difference {
+    margin: 16px;
+    font-size: 20px;
+    font-weight: bold;
+}

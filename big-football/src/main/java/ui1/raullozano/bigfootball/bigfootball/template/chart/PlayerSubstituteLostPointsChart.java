@@ -1,16 +1,13 @@
 package ui1.raullozano.bigfootball.bigfootball.template.chart;
 
+import ui1.raullozano.bigfootball.bigfootball.chart.types.ScatterChart;
+import ui1.raullozano.bigfootball.bigfootball.chart.utils.ChartHelper;
 import ui1.raullozano.bigfootball.common.files.FileAccessor;
 import ui1.raullozano.bigfootball.common.model.transformator.Player;
 import ui1.raullozano.bigfootball.common.model.transformator.Team;
-import ui1.raullozano.bigfootball.bigfootball.chart.types.ColumnChart;
-import ui1.raullozano.bigfootball.bigfootball.chart.utils.ChartHelper;
-import ui1.raullozano.bigfootball.bigfootball.chart.utils.ChartInfo;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class PlayerSubstituteLostPointsChart {
 
@@ -24,32 +21,27 @@ public class PlayerSubstituteLostPointsChart {
 
         if(team == null) return "<html></html>";
 
-        ChartInfo chartInfo = new ColumnChart("Puntos perdidos desde que sustituye", "jugador", "puntos perdidos por partido", 2)
-                .addData("Puntos perdidos desde que sustituye", getSubstituteDataOf(team), "#F50000")
-                .getInfo();
+        ScatterChart chart = new ScatterChart("Puntos perdidos desde que sustituye", "partidos como sustituto", "puntos perdidos", 0);
+
+        for (Player player : team.players()) {
+            if(player.substitutions().substitute() > 0) {
+                chart.addData(player.name(), getSubstituteDataOf(player), "#F50000");
+            }
+        }
 
         return "<html>" +
                     "<header>" +
                         "<script src='https://code.highcharts.com/highcharts.js'></script>" +
                     "</header>" +
                     "<body>" +
-                        "<div id='player-substitute-lost-points' style='height:100%; width: 100%;'>" + ChartHelper.getGraph(getClass(), "player-substitute-lost-points", chartInfo) + "</div>" +
+                        "<div id='player-substitute-lost-points' style='height:100%; width: 100%;'>" + ChartHelper.getGraph(getClass(), "player-substitute-lost-points", chart.getInfo()) + "</div>" +
                     "</body>" +
                 "</html>";
     }
 
-    private LinkedHashMap<String, Double[]> getSubstituteDataOf(Team team) {
-        List<Player> players = team.players().stream()
-                .filter(p -> p.substitutions().substitute() > 0)
-                .sorted((p1, p2) -> Double.compare(p2.substitutions().lostPointsWhenSubstitute()/ (double) p2.substitutions().substitute(), p1.substitutions().lostPointsWhenSubstitute()/ (double) p1.substitutions().substitute()))
-                .collect(Collectors.toList()).subList(0, 5);
-
+    private LinkedHashMap<String, Double[]> getSubstituteDataOf(Player player) {
         LinkedHashMap<String, Double[]> data = new LinkedHashMap<>();
-
-        for (Player player : players) {
-            data.put(player.name(), new Double[]{player.substitutions().lostPointsWhenSubstitute()/ (double) player.substitutions().substitute()});
-        }
-
+        data.put(player.name(), new Double[]{(double) player.substitutions().substitute(), (double) player.substitutions().lostPointsWhenSubstitute()});
         return data;
     }
 }

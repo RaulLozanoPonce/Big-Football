@@ -6,6 +6,7 @@ import ui1.raullozano.bigfootball.common.model.transformator.Player;
 import ui1.raullozano.bigfootball.common.model.transformator.Position;
 import ui1.raullozano.bigfootball.common.model.transformator.Team;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -64,7 +65,7 @@ public class TeamBaseApi {
         }
 
         public TeamBaseResponse squad(List<Player> players) {
-            this.squad = players.stream().map(PlayerSquad::new).collect(Collectors.toList());
+            this.squad = players.stream().sorted(Comparator.comparing(Player::name)).map(PlayerSquad::new).collect(Collectors.toList());
             return this;
         }
 

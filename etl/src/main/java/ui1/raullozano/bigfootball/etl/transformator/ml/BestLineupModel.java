@@ -226,31 +226,31 @@ public class BestLineupModel {
     private void saveCombinationsOf(String competition, String season, Team thisTeam, Team otherTeam, List<Player> otherTeamLineup, Integer[] lineup) {
 
         List<List<Player>> defenseCombination = allCombinationsOf(lineup[0], thisTeam.players().stream()
-                .filter(p -> p.matches().minutes() >= 350)
+                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2)
                 .filter(p -> p.finalPosition() == Position.DF)
                 .collect(Collectors.toList()));
         List<List<Player>> midfieldCombination = allCombinationsOf(lineup[1], thisTeam.players().stream()
-                .filter(p -> p.matches().minutes() >= 350)
+                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2)
                 .filter(p -> p.finalPosition() == Position.CC)
                 .collect(Collectors.toList()));
         List<List<Player>> forwarderCombination = allCombinationsOf(lineup[2], thisTeam.players().stream()
-                .filter(p -> p.matches().minutes() >= 350)
+                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2)
                 .filter(p -> p.finalPosition() == Position.DL)
                 .collect(Collectors.toList()));
 
         List<List<Player>> finalDefenseCombination = defenseCombination.stream()
                 .sorted((l1, l2) -> Integer.compare(minutesOf(l2), minutesOf(l1)))
-                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[0] + 2, 3), defenseCombination.size()));
+                .collect(Collectors.toList()).subList(0, Math.min(lineup[0] + 2, defenseCombination.size()));
         List<List<Player>> finalMidfielderCombination = midfieldCombination.stream()
                 .sorted((l1, l2) -> Integer.compare(minutesOf(l2), minutesOf(l1)))
-                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[1] + 2, 3), midfieldCombination.size()));
+                .collect(Collectors.toList()).subList(0, Math.min(lineup[1] + 2, midfieldCombination.size()));
         List<List<Player>> finalForwarderCombination = forwarderCombination.stream()
                 .sorted((l1, l2) -> Integer.compare(minutesOf(l2), minutesOf(l1)))
-                .collect(Collectors.toList()).subList(0, Math.min(Math.min(lineup[2] + 2, 3), forwarderCombination.size()));
+                .collect(Collectors.toList()).subList(0, Math.min(lineup[2] + 2, forwarderCombination.size()));
 
         List<PlayerCombination> playerCombinations = new ArrayList<>();
 
-        for (Player goalkeeper : thisTeam.players().stream().filter(p -> p.matches().minutes() >= 350).filter(p -> p.finalPosition() == PT).collect(Collectors.toList())) {
+        for (Player goalkeeper : thisTeam.players().stream().filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2).filter(p -> p.finalPosition() == PT).collect(Collectors.toList())) {
             for (List<Player> defenses : finalDefenseCombination) {
                 for (List<Player> midfielders : finalMidfielderCombination) {
                     for (List<Player> forwarders : finalForwarderCombination) {

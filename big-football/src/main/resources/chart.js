@@ -59,7 +59,8 @@ Highcharts.chart(::container::, {
             borderWidth: 0,
             dataLabels: {
                 enabled: true,
-                inside: true
+                inside: true,
+                format: '{y:.::decimals::f}'
             }
         },
         areaspline: {

@@ -6,11 +6,10 @@ import ui1.raullozano.bigfootball.common.model.transformator.Player;
 import ui1.raullozano.bigfootball.common.model.transformator.Position;
 import ui1.raullozano.bigfootball.common.model.transformator.Team;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static ui1.raullozano.bigfootball.common.model.transformator.Position.compare;
 
 public class LineupsApi {
 
@@ -112,16 +111,33 @@ public class LineupsApi {
 
     private LineupsTempleteResponse.LineupComponent firstLineupOf(List<Player> players) {
 
-        Map<Position, List<Player>> playersByPosition = players.stream().collect(Collectors.groupingBy(Player::finalPosition));
+        try {
+            Map<Position, List<Player>> playersByPosition = new LinkedHashMap<>();
+            for (Player player : players) {
+                playersByPosition.putIfAbsent(player.finalPosition(), new ArrayList<>());
+                playersByPosition.get(player.finalPosition()).add(player);
+            }
 
-        List<Player> returnPlayers = new ArrayList<>();
+            List<Player> returnPlayers = new ArrayList<>();
 
-        returnPlayers.addAll(playersByPosition.get(Position.PT).subList(0, this.lineup[0]));
-        returnPlayers.addAll(playersByPosition.get(Position.DF).subList(0, this.lineup[1]));
-        returnPlayers.addAll(playersByPosition.get(Position.CC).subList(0, this.lineup[2]));
-        returnPlayers.addAll(playersByPosition.get(Position.DL).subList(0, this.lineup[3]));
+            returnPlayers.addAll(playersByPosition.get(Position.PT).subList(0, this.lineup[0]));
+            returnPlayers.addAll(playersByPosition.get(Position.DF).subList(0, this.lineup[1]));
+            returnPlayers.addAll(playersByPosition.get(Position.CC).subList(0, this.lineup[2]));
+            returnPlayers.addAll(playersByPosition.get(Position.DL).subList(0, this.lineup[3]));
 
-        return new LineupsTempleteResponse.LineupComponent(returnPlayers);
+            returnPlayers = returnPlayers.stream().sorted((p1, p2) -> {
+                int compare = compare(p1.finalPosition(), p2.finalPosition());
+                if (compare == 0) {
+                    return p1.name().compareTo(p2.name());
+                } else {
+                    return compare;
+                }
+            }).collect(Collectors.toList());
+
+            return new LineupsTempleteResponse.LineupComponent(returnPlayers);
+        } catch (IndexOutOfBoundsException e) {
+            return new LineupsTempleteResponse.LineupComponent(new ArrayList<>());
+        }
     }
 
     private static class LineupsTempleteResponse {

@@ -29,7 +29,8 @@ class Statistics extends Component {
     render() {
         return (
             <div className="Lineups">
-                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }/>
+                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }
+                    prevUrl={"team?competition=" + this.competition + "&season=" + this.season + "&team=" + this.team}/>
                 <TeamHeader />
                 <LineupSelector loadFunction={this.loadLineups} selectId="lineup-selector" />
                 <div id="lineups-content">
@@ -57,6 +58,7 @@ class Statistics extends Component {
     componentDidMount() {
         document.getElementById("lineup-selector").value = "4-3-3";
 
+        var self = this;
         AjaxGet(urlBase + "/api/team-base/" + this.season + "/" + this.competition + "/" + this.team, {}, function(content) {
 
             var team = JSON.parse(content);

@@ -28,9 +28,11 @@ class LineupPrediction extends Component {
     render() {
         return (
             <div className="LineupPrediction">
-                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }/>
+                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }
+                    prevUrl={"team?competition=" + this.competition + "&season=" + this.season + "&team=" + this.team}/>
                 <TeamHeader />
-                <LineupTeamSelector loadFunction={this.loadBestLineup} selectLineupId="lineup-selector" selectTeamId="other-team-selector" />
+                <LineupTeamSelector loadFunction={this.loadBestLineup} selectLineupId="lineup-selector" 
+                    selectTeamId="other-team-selector" />
                 <p id="goal-difference"></p>
                 <div id="lineup-prediction-content">
                     <div className="lineup-prediction-content-column">
@@ -89,23 +91,34 @@ class LineupPrediction extends Component {
             }
 
             document.getElementById("other-team-selector").value = teams[firstIndex];
-            self.loadBestLineup(self);
+            self.forceUpdate();
+            self.loadBestLineup();
         });
     }
 
     loadBestLineup() {
 
         var self = this;
-        AjaxGet(urlBase + "/api/best-lineup/" + this.season + "/" + this.competition + "/" + this.team + "/" + document.getElementById("other-team-selector").value + "/" + document.getElementById("lineup-selector").value, {}, function(content) {
+        AjaxGet(urlBase + "/api/best-lineup/" + this.season + "/" + this.competition + "/" + 
+            this.team + "/" + document.getElementById("other-team-selector").value + "/" + 
+            document.getElementById("lineup-selector").value, {}, function(content) {
+
             var lineup = JSON.parse(content);
             self.bestLineup = self.getSquadTable(lineup.bestLineup);
-            document.getElementById("goal-difference").value =
-                "La diferencia de goles estimado si te enfretas contra " + document.getElementById("other-team-selector").value +
-                " es de " + lineup.goalDifference + " goles";
+            document.getElementById("goal-difference").innerHTML =
+                "La diferencia de goles estimado si en un enfrentamiento contra " +
+                document.getElementById("other-team-selector").value +
+                " utilizando una formación " +
+                document.getElementById("lineup-selector").value +
+                " es de " +
+                lineup.goalDifference +
+                " gol/es";
             self.forceUpdate();
         });
 
-        AjaxGet(urlBase + "/api/statistics/" + this.season + "/" + this.competition + "/" + document.getElementById("other-team-selector").value, {}, function(content) {
+        AjaxGet(urlBase + "/api/statistics/" + this.season + "/" + this.competition + "/" + 
+            document.getElementById("other-team-selector").value, {}, function(content) {
+
             var statistics = JSON.parse(content);
             self.otherLineup = self.getSquadTable(statistics.startingLineup);
             self.forceUpdate();
@@ -116,7 +129,8 @@ class LineupPrediction extends Component {
         var collection = [["Nombre", "Posición", "Edad", "Partidos Jugados", "Minutos", "Goles", "Asistencias"]];
         for(var index in players) {
             var player = players[index];
-            collection.push([player.name, player.position, player.age, player.playedMatches, player.minutes, player.goals, player.assists]);
+            collection.push([player.name, player.position, player.age, player.playedMatches, player.minutes, 
+                player.goals, player.assists]);
         }
         return collection;
     }

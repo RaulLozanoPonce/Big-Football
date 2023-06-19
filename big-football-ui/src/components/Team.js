@@ -17,11 +17,12 @@ class Team extends Component {
     render() {
         return (
             <div className="Team">
-                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }/>
+                <Navigation title={ "Big-Football > " + this.competition + " > " + this.season + " > " + this.team }
+                    prevUrl={"season?competition=" + this.competition + "&season=" + this.season}/>
                 <div id="teamOptions">
                     <Option title="Estadísticas del equipo" actionFunction={ () => this.loadStatistics() } />
                     <Option title="Mejores alineaciones" actionFunction={ () => this.loadLineups() } />
-                    <Option title="Alineación pre-partido" actionFunction={ () => this.loadLineupPrediction() } />
+                    <Option title="Alineación prepartido" actionFunction={ () => this.loadLineupPrediction() } />
                 </div>
             </div>
         );

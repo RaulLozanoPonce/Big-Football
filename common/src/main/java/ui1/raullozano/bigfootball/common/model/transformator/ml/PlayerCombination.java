@@ -27,61 +27,61 @@ public class PlayerCombination {
             "gkPassesThrows", "gkPctPassesLaunched", "gkPassesLengthAvg", "gkGoalKicks", "gkPctGoalKicksLaunched", "gkGoalKickLengthAvg",
             "gkCrosses", "gkCrossesStopped", "gkDefActionsOutsidePenArea", "gkAvgDistanceDefActions");
 
-    private final LinkedHashMap<String, Object> dataset = new LinkedHashMap<>();
+    private final LinkedHashMap<String, Object> line = new LinkedHashMap<>();
 
     public PlayerCombination addPlayerStats(Map<Player, List<PlayerStats>> thisPlayersStats, Map<Player, List<PlayerStats>> otherPlayersStats) {
         gameStatistics.forEach(s -> {
-            this.dataset.put("this-gk-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("this-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() != Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("other-gk-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
-            this.dataset.put("other-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() != Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
+            this.line.put("this-gk-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
+            this.line.put("this-" + s, thisPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() != Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
+            this.line.put("other-gk-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() == Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
+            this.line.put("other-" + s, otherPlayersStats.entrySet().stream().filter(e -> e.getKey().finalPosition() != Position.PT).mapToDouble(e -> e.getValue().stream().mapToDouble(p -> p.get(s)).average().getAsDouble()).average().orElse(0));
         });
         return this;
     }
 
     public PlayerCombination addTeamsStreak(List<Integer> thisTeamStreak, List<Integer> otherTeamStreak) {
-        this.dataset.put("thisTeamStreak", thisTeamStreak.stream().mapToDouble(v -> v).average().orElse(0));
-        this.dataset.put("otherTeamStreak", otherTeamStreak.stream().mapToDouble(v -> v).average().orElse(0));
+        this.line.put("thisTeamStreak", thisTeamStreak.stream().mapToDouble(v -> v).average().orElse(0));
+        this.line.put("otherTeamStreak", otherTeamStreak.stream().mapToDouble(v -> v).average().orElse(0));
         return this;
     }
 
     public PlayerCombination addLastGoalDifference(double thisLastGoalDifference, double otherLastGoalDifference) {
-        this.dataset.put("thisLastGoalDifference", thisLastGoalDifference);
-        this.dataset.put("otherLastGoalDifference", otherLastGoalDifference);
+        this.line.put("thisLastGoalDifference", thisLastGoalDifference);
+        this.line.put("otherLastGoalDifference", otherLastGoalDifference);
         return this;
     }
 
     public PlayerCombination addTeams(String thisTeam, String otherTeam) {
-        this.dataset.put("thisTeam", thisTeam);
-        this.dataset.put("otherTeam", otherTeam);
+        this.line.put("thisTeam", thisTeam);
+        this.line.put("otherTeam", otherTeam);
         return this;
     }
 
     public PlayerCombination addGoalDifference(int goalsDifference, double minutes) {
-        this.dataset.put("label", 90 * goalsDifference / minutes);
+        this.line.put("label", 90 * goalsDifference / minutes);
         return this;
     }
 
     public Set<String> attributes() {
-        return dataset.keySet();
+        return line.keySet();
     }
 
     public Object attribute(String attribute) {
-        return this.dataset.get(attribute);
+        return this.line.get(attribute);
     }
 
     public PlayerCombination addAttribute(String name, Object value) {
-        this.dataset.put(name, value);
+        this.line.put(name, value);
         return this;
     }
 
     public void delete(String attribute) {
-        this.dataset.remove(attribute);
+        this.line.remove(attribute);
     }
 
     public String header() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, Object> entry : dataset.entrySet()) {
+        for (Map.Entry<String, Object> entry : line.entrySet()) {
             sb.append(";").append(entry.getKey());
         }
         sb.append("\n");
@@ -91,7 +91,7 @@ public class PlayerCombination {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, Object> entry : dataset.entrySet()) {
+        for (Map.Entry<String, Object> entry : line.entrySet()) {
             sb.append(";").append(entry.getValue().toString());
         }
         sb.append("\n");

@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class TeamGoalsForChart {
@@ -46,37 +47,14 @@ public class TeamGoalsForChart {
         Map<String, Integer> goalsFor = team.goalsFor();
 
         Map<String, Integer> aggregatedGoals = new LinkedHashMap<>();
-
-        for (String minute : minutesOf(goalsFor.keySet())) {
-            int minuteInt = MatchUtils.minuteOf(minute);
-            String label;
-            if(minuteInt <= 15) {
-                label = "0-15";
-            } else if(minuteInt <= 30) {
-                label = "16-30";
-            } else if(minuteInt <= 45) {
-                label = "31-45";
-            } else {
-                if(minute.contains("+")) {
-                    if(minuteInt < 90) {
-                        label = "Descuento 1a";
-                    } else {
-                        label = "Descuento 2a";
-                    }
-                } else {
-                    if(minuteInt <= 60) {
-                        label = "45-60";
-                    } else if(minuteInt <= 75) {
-                        label = "61-75";
-                    } else {
-                        label = "76-90";
-                    }
-                }
-            }
-
-            aggregatedGoals.putIfAbsent(label, 0);
-            aggregatedGoals.put(label, aggregatedGoals.get(label) + goalsFor.get(minute));
-        }
+        aggregatedGoals.put("0-15", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("0", "15")).count());
+        aggregatedGoals.put("16-30", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("16", "30")).count());
+        aggregatedGoals.put("31-45", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("31", "45")).count());
+        aggregatedGoals.put("Descuento 1a", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("45", "+")).count());
+        aggregatedGoals.put("46-60", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("46", "60")).count());
+        aggregatedGoals.put("61-75", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("61", "75")).count());
+        aggregatedGoals.put("76-90", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("76", "90")).count());
+        aggregatedGoals.put("Descuento 2a", (int) minutesOf(goalsFor.keySet()).stream().filter(minutesBetween("90", "+")).count());
 
         LinkedHashMap<String, Double[]> data = new LinkedHashMap<>();
 
@@ -85,6 +63,30 @@ public class TeamGoalsForChart {
         }
 
         return data;
+    }
+
+    private Predicate<String> minutesBetween(String minuteFrom, String minuteTo) {
+        int minuteFromInt = MatchUtils.minuteOf(minuteFrom);
+        if(minuteTo.equals("+")) {
+            return minute -> {
+                if (minute.contains("+")) {
+                    int minuteInt = Integer.parseInt(minute.split("\\+")[0]);
+                    return minuteInt == minuteFromInt;
+                } else {
+                    return false;
+                }
+            };
+        } else {
+            int minuteToInt = MatchUtils.minuteOf(minuteTo);
+            return minute -> {
+                if (minute.contains("+")) {
+                    return false;
+                } else {
+                    int minuteInt = MatchUtils.minuteOf(minute);
+                    return minuteInt >= minuteFromInt && minuteInt <= minuteToInt;
+                }
+            };
+        }
     }
 
     private List<String> minutesOf(Set<String> minutes) {

@@ -24,7 +24,7 @@ class Competition extends Component {
 
         return (
             <div className="Competition">
-                <Navigation title={ "Big-Football > " + this.competition }/>
+                <Navigation title={ "Big-Football > " + this.competition } prevUrl={""}/>
                 <div id="seasons">
                     { seasonOptions }
                 </div>

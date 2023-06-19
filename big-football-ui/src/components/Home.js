@@ -22,7 +22,7 @@ class Home extends Component {
 
         return (
             <div className="Home">
-                <Navigation title="Big-Football"/>
+                <Navigation title="Big-Football" prevUrl={""}/>
                 <div id="competitions">
                     { competitionOptions }
                 </div>
