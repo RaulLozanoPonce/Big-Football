@@ -3,3 +3,4 @@ port=9000
 scale=H
 time-components=[19]
 ml-master=local[2]
+url-base=http://localhost:9000/
