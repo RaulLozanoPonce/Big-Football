@@ -226,15 +226,15 @@ public class BestLineupModel {
     private void saveCombinationsOf(String competition, String season, Team thisTeam, Team otherTeam, List<Player> otherTeamLineup, Integer[] lineup) {
 
         List<List<Player>> defenseCombination = allCombinationsOf(lineup[0], thisTeam.players().stream()
-                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2)
+                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.3)
                 .filter(p -> p.finalPosition() == Position.DF)
                 .collect(Collectors.toList()));
         List<List<Player>> midfieldCombination = allCombinationsOf(lineup[1], thisTeam.players().stream()
-                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2)
+                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.3)
                 .filter(p -> p.finalPosition() == Position.CC)
                 .collect(Collectors.toList()));
         List<List<Player>> forwarderCombination = allCombinationsOf(lineup[2], thisTeam.players().stream()
-                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2)
+                .filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.3)
                 .filter(p -> p.finalPosition() == Position.DL)
                 .collect(Collectors.toList()));
 
@@ -250,7 +250,7 @@ public class BestLineupModel {
 
         List<PlayerCombination> playerCombinations = new ArrayList<>();
 
-        for (Player goalkeeper : thisTeam.players().stream().filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.2).filter(p -> p.finalPosition() == PT).collect(Collectors.toList())) {
+        for (Player goalkeeper : thisTeam.players().stream().filter(p -> p.matches().minutes() >= thisTeam.playedMatches() * 90 * 0.3).filter(p -> p.finalPosition() == PT).collect(Collectors.toList())) {
             for (List<Player> defenses : finalDefenseCombination) {
                 for (List<Player> midfielders : finalMidfielderCombination) {
                     for (List<Player> forwarders : finalForwarderCombination) {

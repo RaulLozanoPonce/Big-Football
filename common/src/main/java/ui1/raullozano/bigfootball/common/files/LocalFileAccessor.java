@@ -248,13 +248,19 @@ public class LocalFileAccessor implements FileAccessor {
     @Override
     public void removePlayerCombinationToTest() {
         try {
-            File file = new File(data() + "/transformed/machine-learning/test/");
-            if(file.exists()) {
-                file.delete();
-            }
+            remove(new File(data() + "/transformed/machine-learning/test/"));
         } catch (Throwable t) {
             t.printStackTrace();
         }
+    }
+
+    private synchronized void remove(File file) {
+        if(file.listFiles() != null) {
+            for (File children : Objects.requireNonNull(file.listFiles())) {
+                remove(children);
+            }
+        }
+        file.delete();
     }
 
     @Override

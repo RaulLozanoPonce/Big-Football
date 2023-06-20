@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './../styles/LineupSelector.css';
 
-class LineupSelector extends Component {
+class LineupTeamSelector extends Component {
 
     render() {
         return (
@@ -25,4 +25,4 @@ class LineupSelector extends Component {
     }
 }
 
-export default LineupSelector;
+export default LineupTeamSelector;

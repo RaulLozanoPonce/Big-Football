@@ -4,13 +4,12 @@ import ui1.raullozano.bigfootball.common.model.Competition;
 import ui1.raullozano.bigfootball.common.model.extractor.Match;
 import ui1.raullozano.bigfootball.common.utils.Time;
 import ui1.raullozano.bigfootball.etl.extractor.Extractor;
-import ui1.raullozano.bigfootball.etl.transformator.Transformator;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-public class Main {
+public class GetMatches {
 
     public static void main(String[] args) {
 
@@ -21,12 +20,9 @@ public class Main {
 
             for (Competition competition : matches.keySet()) {
                 int year = competition.yearOf(instant);
-                //Transformator transformator = new Transformator(fileAccessor, competition.folderName(), year);
                 for (Match match : matches.get(competition)) {
                     fileAccessor.saveMatch(competition.folderName(), year, match, instant);
-                    //transformator.transform(match);
                 }
-                //transformator.saveFiles();
             }
         }
     }

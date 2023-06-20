@@ -29,7 +29,7 @@ public interface FileAccessor {
     List<String> seasonFolderNames(String competition);
     List<String> teamsFileNames(String competition, String season);
 
-    /* ---------- TRANSFORM ----------------------------------------------------------------------------------------- */
+    /* ---------- ETL ----------------------------------------------------------------------------------------- */
     void saveMatch(String competition, int year, Match match, Instant instant);
     Team getTeam(String competition, String season, String team);
     void saveTeam(String competition, String season, Team team);

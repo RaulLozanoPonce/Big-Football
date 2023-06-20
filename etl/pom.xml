@@ -21,7 +21,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>ui1.raullozano.bigfootball.etl.Main</mainClass>
+              <mainClass>ui1.raullozano.bigfootball.etl.GetMatches</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
