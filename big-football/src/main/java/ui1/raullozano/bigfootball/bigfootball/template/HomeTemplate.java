@@ -1,8 +1,10 @@
 package ui1.raullozano.bigfootball.bigfootball.template;
 
-import java.util.List;
-
 public class HomeTemplate extends WebTemplate {
+
+    public HomeTemplate(String urlBase) {
+        super(urlBase);
+    }
 
     @Override
     protected String getBaseHtmlName() {

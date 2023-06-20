@@ -3,8 +3,8 @@ package ui1.raullozano.bigfootball.bigfootball;
 import spark.Spark;
 import ui1.raullozano.bigfootball.bigfootball.api.*;
 import ui1.raullozano.bigfootball.bigfootball.template.*;
-import ui1.raullozano.bigfootball.common.files.FileAccessor;
 import ui1.raullozano.bigfootball.bigfootball.template.chart.*;
+import ui1.raullozano.bigfootball.common.files.FileAccessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -165,13 +165,13 @@ public class UIBox {
     }
 
     private void initUI() {
-        get("/", (req, res) -> new HomeTemplate().getHtml());
-        get("/home", (req, res) -> new HomeTemplate().getHtml());
-        get("/competition", (req, res) -> new CompetitionTemplate().getHtml());
-        get("/season", (req, res) -> new SeasonTemplate().getHtml());
-        get("/team", (req, res) -> new TeamTemplate().getHtml());
-        get("/statistics", (req, res) -> new StatisticsTemplate().getHtml());
-        get("/lineups", (req, res) -> new LineupsTemplate().getHtml());
-        get("/best-lineup-prediction", (req, res) -> new BestLineupPredictionTemplate().getHtml());
+        get("/", (req, res) -> new HomeTemplate(fileAccessor.urlBase()).getHtml());
+        get("/home", (req, res) -> new HomeTemplate(fileAccessor.urlBase()).getHtml());
+        get("/competition", (req, res) -> new CompetitionTemplate(fileAccessor.urlBase()).getHtml());
+        get("/season", (req, res) -> new SeasonTemplate(fileAccessor.urlBase()).getHtml());
+        get("/team", (req, res) -> new TeamTemplate(fileAccessor.urlBase()).getHtml());
+        get("/statistics", (req, res) -> new StatisticsTemplate(fileAccessor.urlBase()).getHtml());
+        get("/lineups", (req, res) -> new LineupsTemplate(fileAccessor.urlBase()).getHtml());
+        get("/best-lineup-prediction", (req, res) -> new BestLineupPredictionTemplate(fileAccessor.urlBase()).getHtml());
     }
 }

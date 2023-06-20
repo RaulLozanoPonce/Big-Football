@@ -4,6 +4,10 @@ import java.util.List;
 
 public class StatisticsTemplate extends WebTemplate {
 
+    public StatisticsTemplate(String urlBase) {
+        super(urlBase);
+    }
+
     @Override
     protected String getBaseHtmlName() {
         return "statistics";

@@ -22,6 +22,8 @@ public interface FileAccessor {
     Integer port();
     Time.Scale scale();
     List<Integer> timeComponents();
+    String mlMaster();
+    String urlBase();
     List<Competition> competitions();
 
     /* ---------- FILES --------------------------------------------------------------------------------------------- */

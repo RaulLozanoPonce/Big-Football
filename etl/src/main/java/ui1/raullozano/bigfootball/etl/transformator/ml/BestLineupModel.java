@@ -98,7 +98,7 @@ public class BestLineupModel {
     private SparkSession getSession() {
         SparkConf conf = new SparkConf()
                 .setAppName("BestLineup")
-                .setMaster(fileAccessor.parameters().get("ml-master"));
+                .setMaster(fileAccessor.mlMaster());
         SparkContext sc = new SparkContext(conf);
         sc.setLogLevel("ERROR");
         return new SparkSession(sc);

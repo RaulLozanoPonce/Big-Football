@@ -56,7 +56,17 @@ public class LocalFileAccessor implements FileAccessor {
 
     @Override
     public synchronized List<Integer> timeComponents() {
-        return new Gson().fromJson(parameters().get("timeComponents"), new TypeToken<List<Integer>>(){}.getType());
+        return new Gson().fromJson(parameters().get("time-components"), new TypeToken<List<Integer>>(){}.getType());
+    }
+
+    @Override
+    public synchronized String mlMaster() {
+        return parameters().get("ml-master");
+    }
+
+    @Override
+    public synchronized String urlBase() {
+        return parameters().get("url-base");
     }
 
     @Override

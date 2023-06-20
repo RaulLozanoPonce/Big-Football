@@ -8,6 +8,12 @@ import static spark.Spark.get;
 
 public abstract class WebTemplate {
 
+    private final String urlBase;
+
+    public WebTemplate(String urlBase) {
+        this.urlBase = urlBase;
+    }
+
     public String getHtml() {
 
         String baseHtml = getResource("/public/" + getBaseHtmlName() + ".html");
@@ -21,7 +27,7 @@ public abstract class WebTemplate {
             if(preRenderScript == null) preRenderScript = "";
             baseHtml = baseHtml.replaceAll("::prerender-script::", preRenderScript);
 
-            baseHtml = baseHtml.replaceAll("::url-base::", "http://localhost:9000");
+            baseHtml = baseHtml.replaceAll("::url-base::", this.urlBase);
 
             return baseHtml;
         }

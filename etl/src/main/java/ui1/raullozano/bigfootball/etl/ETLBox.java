@@ -12,8 +12,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static ui1.raullozano.bigfootball.common.utils.Time.*;
-
 public class ETLBox {
 
     private final FileAccessor fileAccessor;
